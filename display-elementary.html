@@ -62,11 +62,21 @@
   <div class="overlay-box">
     <h2>🎓 Elementary Display</h2>
     <p>Connect to your Supabase database to start showing checkout announcements.</p>
-    <div class="o-field"><label>Supabase URL</label><input type="text" id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
-    <div class="o-field"><label>Supabase Anon Key</label><input type="password" id="cfgKey" placeholder="anon key"></div>
-    <button class="btn-connect" onclick="connect()">🚀 Connect</button>
+    <div class="o-field"><label>Supabase URL</label><input type="text" id="cfgUrl" placeholder="https://xxxx.supabase.co" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="o-field"><label>Supabase Anon Key</label><input type="text" id="cfgKey" placeholder="anon key" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
+    <button class="btn-connect" onclick="connect()" id="connectBtn">🚀 Connect</button>
   </div>
 </div>
+
+<script>
+// Allow Enter key on inputs to trigger connect
+document.addEventListener('DOMContentLoaded', function() {
+  ['cfgUrl','cfgKey'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('keydown', function(e){ if(e.key==='Enter') connect(); });
+  });
+});
+</script>
 
 <div class="header">
   <div><h1>🎓 <span>Elementary</span> Pickup</h1><p>Family Checkout Station</p></div>
@@ -105,10 +115,17 @@ tick(); setInterval(tick,1000);
 let CFG={url:'',key:''}, lastId=null, recentNames=[], activeTimer=null;
 
 function connect(){
-  CFG.url=document.getElementById('cfgUrl').value.trim().replace(/\/$/,'');
-  CFG.key=document.getElementById('cfgKey').value.trim();
-  if(!CFG.url||!CFG.key) return;
-  localStorage.setItem('kc_el_cfg',JSON.stringify(CFG));
+  var urlVal = document.getElementById('cfgUrl').value.trim();
+  var keyVal = document.getElementById('cfgKey').value.trim();
+  // Strip trailing slash
+  if(urlVal.slice(-1)==='/') urlVal = urlVal.slice(0,-1);
+  if(!urlVal || !keyVal){
+    alert('Please fill in both the Supabase URL and Anon Key.');
+    return;
+  }
+  CFG.url = urlVal;
+  CFG.key = keyVal;
+  try{ localStorage.setItem('kc_el_cfg', JSON.stringify(CFG)); }catch(e){}
   document.getElementById('overlay').style.display='none';
   startPolling();
 }
