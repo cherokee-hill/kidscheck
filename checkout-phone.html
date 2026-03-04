@@ -418,7 +418,7 @@ async function lookupPCO(code) {
   const auth = btoa(`${CFG.pcoId}:${CFG.pcoSecret}`);
   try {
     const r = await fetch(
-      `https://kidscheck-proxy.cherokee-58e.workers.dev/proxy/check-ins/v2/check_ins?where[security_code]=${encodeURIComponent(code)}&include=person,event_period&per_page=25&filter=checked_in`,
+      `https://kidscheck-proxy.cherokee-58e.workers.dev/proxy/check-ins/v2/check_ins?where[security_code]=${encodeURIComponent(code)}&include=person,locations&per_page=50&filter=checked_in`,
       { headers: { 'Authorization': `Basic ${auth}` } }
     );
     if (!r.ok) {
@@ -446,27 +446,53 @@ function locType(n) {
   return 'other';
 }
 
+const KIDS_ROOMS = ['nursery','infant','toddler','preschool','pre-k','prek','pre k','elementary','grade','kinder','element','children','kids','child'];
+function isKidsRoom(locName) {
+  const s = (locName||'').toLowerCase();
+  return KIDS_ROOMS.some(k => s.includes(k));
+}
+
 function renderKids(data, code) {
   if (!data.data || data.data.length === 0) {
     setResults(`<div class="empty"><div class="ei">🔍</div><p>No active check-ins found</p><small>Badge code: ${code}<br>Make sure kids are checked in before scanning.</small></div>`);
     return;
   }
 
-  const people={}, eps={};
+  const people={}, locations={};
   (data.included||[]).forEach(i => {
     if (i.type==='Person') people[i.id]=i;
-    if (i.type==='EventPeriod') eps[i.id]=i;
+    if (i.type==='Location') locations[i.id]=i;
   });
 
-  const kids = data.data.map(ci => {
-    const pRel  = ci.relationships?.person?.data;
-    const epRel = ci.relationships?.event_period?.data;
-    const p     = pRel ? people[pRel.id] : null;
-    const first = p?.attributes?.first_name || ci.attributes?.first_name || 'Unknown';
-    const last  = p?.attributes?.last_name  || ci.attributes?.last_name  || '';
-    const loc   = ci.attributes?.location_name || eps[epRel?.id]?.attributes?.name || 'Unknown';
-    return { id: ci.id, name: `${first} ${last}`.trim(), location: loc, lt: locType(loc), out: !!ci.attributes?.checked_out_at };
+  const allCheckins = data.data.map(ci => {
+    const pRel   = ci.relationships?.person?.data;
+    const locRel = ci.relationships?.locations?.data?.[0] || ci.relationships?.location?.data;
+    const p      = pRel ? people[pRel.id] : null;
+    const locObj = locRel ? locations[locRel.id] : null;
+    const first  = p?.attributes?.first_name || ci.attributes?.first_name || 'Unknown';
+    const last   = p?.attributes?.last_name  || ci.attributes?.last_name  || '';
+    const loc    = locObj?.attributes?.name || ci.attributes?.location_name || '';
+    return {
+      id: ci.id,
+      name: `${first} ${last}`.trim(),
+      location: loc,
+      lt: locType(loc),
+      out: !!ci.attributes?.checked_out_at,
+      kind: ci.attributes?.kind || ''
+    };
   });
+
+  // Filter out volunteers and non-kids-room check-ins
+  const kids = allCheckins.filter(c => {
+    if (c.kind && c.kind.toLowerCase().includes('volunteer')) return false;
+    if (!c.location) return true; // show if location unknown — better safe than hiding a real kid
+    return isKidsRoom(c.location);
+  });
+
+  if (kids.length === 0) {
+    setResults(`<div class="empty"><div class="ei">🔍</div><p>No kids found for this badge</p><small>Badge code: ${code}</small></div>`);
+    return;
+  }
 
   const famName = kids[0]?.name.split(' ').slice(-1)[0] || 'Family';
 
