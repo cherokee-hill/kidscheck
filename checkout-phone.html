@@ -8,158 +8,90 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.18.6/index.min.js"></script>
 <style>
   :root {
-    --sky: #0ea5e9;
-    --sky-dark: #0284c7;
-    --sky-light: #e0f2fe;
-    --green: #22c55e;
-    --green-dark: #16a34a;
-    --amber-light: #fef3c7;
-    --purple-light: #ede9fe;
-    --red: #ef4444;
-    --slate: #64748b;
-    --slate-light: #f1f5f9;
-    --dark: #0f172a;
+    --sky: #0ea5e9; --sky-dark: #0284c7; --sky-light: #e0f2fe;
+    --green: #22c55e; --green-dark: #16a34a;
+    --amber-light: #fef3c7; --purple-light: #ede9fe;
+    --red: #ef4444; --slate: #64748b; --slate-light: #f1f5f9; --dark: #0f172a;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body { font-family: 'DM Sans', sans-serif; background: #f0f9ff; color: var(--dark); min-height: 100vh; }
 
-  /* Header */
-  .header {
-    background: linear-gradient(135deg, var(--sky-dark), var(--sky));
-    padding: 16px 18px; padding-top: calc(16px + env(safe-area-inset-top));
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 4px 20px rgba(2,132,199,0.3);
-  }
+  .header { background: linear-gradient(135deg, var(--sky-dark), var(--sky)); padding: 16px 18px; padding-top: calc(16px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(2,132,199,0.3); }
   .logo { font-family: 'Baloo 2', sans-serif; font-size: 1.45rem; font-weight: 800; color: white; }
   .logo span { opacity: 0.7; font-weight: 600; }
   .hdr-right { display: flex; align-items: center; gap: 10px; }
-  .conn-pill {
-    display: flex; align-items: center; gap: 5px;
-    background: rgba(255,255,255,0.2); padding: 5px 11px;
-    border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: white;
-  }
+  .conn-pill { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.2); padding: 5px 11px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: white; }
   .cdot { width: 7px; height: 7px; border-radius: 50%; background: #fcd34d; animation: blink 1s infinite; }
   .cdot.live { background: #86efac; box-shadow: 0 0 5px #86efac; animation: none; }
   .cdot.err { background: #fca5a5; animation: none; }
   @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
-  .btn-gear {
-    background: rgba(255,255,255,0.22); border: none;
-    border-radius: 10px; width: 38px; height: 38px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.15rem; cursor: pointer; color: white;
-  }
+  .btn-gear { background: rgba(255,255,255,0.22); border: none; border-radius: 10px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; cursor: pointer; color: white; }
   .btn-gear:active { background: rgba(255,255,255,0.38); }
 
-  /* Body */
   .body { padding: 16px 16px 48px; }
 
-  /* Scan card */
-  .scan-card {
-    background: white; border-radius: 18px; padding: 18px;
-    margin-bottom: 14px; border: 2px solid var(--sky-light);
-    box-shadow: 0 4px 20px rgba(14,165,233,0.1);
-    position: relative; overflow: hidden;
-  }
-  .scan-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--sky-dark), var(--green));
-  }
+  .scan-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 2px solid var(--sky-light); box-shadow: 0 4px 20px rgba(14,165,233,0.1); position: relative; overflow: hidden; }
+  .scan-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--sky-dark), var(--green)); }
   .scan-lbl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); margin-bottom: 10px; }
   .scan-row { display: flex; gap: 9px; }
-  #barcodeInput {
-    flex: 1; padding: 13px 14px;
-    border: 2px solid var(--sky-light); border-radius: 12px;
-    font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600;
-    color: var(--dark); background: #f8fafc; -webkit-appearance: none;
-    transition: border-color 0.2s;
-  }
+  #barcodeInput { flex: 1; padding: 13px 14px; border: 2px solid var(--sky-light); border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--dark); background: #f8fafc; -webkit-appearance: none; transition: border-color 0.2s; }
   #barcodeInput:focus { outline: none; border-color: var(--sky); background: white; }
   #barcodeInput::placeholder { color: #94a3b8; font-weight: 500; }
-  .btn-cam {
-    background: var(--sky-light); color: var(--sky-dark);
-    border: 2px solid var(--sky-light); border-radius: 12px;
-    width: 50px; height: 50px; font-size: 1.3rem;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; flex-shrink: 0; -webkit-appearance: none; transition: all 0.2s;
-  }
-  .btn-cam:active, .btn-cam.on { background: var(--red); color: white; border-color: var(--red); }
-  .btn-go {
-    background: var(--sky-dark); color: white; border: none;
-    padding: 13px 16px; border-radius: 12px;
-    font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 0.88rem;
-    cursor: pointer; white-space: nowrap; -webkit-appearance: none;
-    box-shadow: 0 3px 12px rgba(2,132,199,0.3); transition: all 0.18s;
-  }
+  .btn-cam { background: var(--sky-light); color: var(--sky-dark); border: 2px solid var(--sky-light); border-radius: 12px; width: 50px; height: 50px; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; -webkit-appearance: none; transition: all 0.2s; }
+  .btn-cam.on { background: var(--red); color: white; border-color: var(--red); }
+  .btn-go { background: var(--sky-dark); color: white; border: none; padding: 13px 16px; border-radius: 12px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; white-space: nowrap; -webkit-appearance: none; box-shadow: 0 3px 12px rgba(2,132,199,0.3); }
   .btn-go:active { transform: scale(0.96); }
 
-  /* Camera */
   #camView { display: none; margin-top: 12px; border-radius: 14px; overflow: hidden; background: #000; position: relative; }
   #camView.on { display: block; }
   #camVideo { width: 100%; display: block; max-height: 230px; object-fit: cover; }
   .cam-ui { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
   .cam-box { width: 200px; height: 110px; border: 3px solid var(--sky); border-radius: 12px; box-shadow: 0 0 0 2000px rgba(0,0,0,0.42); position: relative; }
-  .cam-beam { position: absolute; left: 10px; right: 10px; height: 2px; background: var(--sky); top: 50%; animation: beam 1.5s ease-in-out infinite; box-shadow: 0 0 8px var(--sky); }
+  .cam-beam { position: absolute; left: 10px; right: 10px; height: 2px; background: var(--sky); animation: beam 1.5s ease-in-out infinite; box-shadow: 0 0 8px var(--sky); }
   @keyframes beam { 0%{top:15%}50%{top:85%}100%{top:15%} }
   .cam-tip { position: absolute; bottom: 9px; left: 0; right: 0; text-align: center; color: white; font-size: 0.73rem; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
 
-  /* Results */
-  .fam-banner {
-    background: linear-gradient(135deg, var(--sky-dark), #0369a1);
-    color: white; border-radius: 14px 14px 0 0;
-    padding: 13px 16px; font-family: 'Baloo 2', sans-serif;
-    font-weight: 700; font-size: 0.95rem;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .kid-list {
-    background: white; border-radius: 0 0 14px 14px;
-    border: 2px solid var(--sky-light); border-top: none;
-    overflow: hidden; box-shadow: 0 4px 20px rgba(14,165,233,0.1); margin-bottom: 16px;
-  }
-  .kid-row { display: flex; align-items: center; padding: 13px 15px; gap: 12px; border-bottom: 1px solid #f1f5f9; }
+  .fam-banner { background: linear-gradient(135deg, var(--sky-dark), #0369a1); color: white; border-radius: 14px 14px 0 0; padding: 13px 16px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .kid-list { background: white; border: 2px solid var(--sky-light); border-top: none; overflow: hidden; }
+  .kid-row { display: flex; align-items: center; padding: 12px 15px; gap: 12px; border-bottom: 1px solid #f1f5f9; transition: opacity 0.3s; }
   .kid-row:last-child { border-bottom: none; }
-  .avi { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1rem; color: white; flex-shrink: 0; }
+  .avi { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 0.95rem; color: white; flex-shrink: 0; }
   .kid-info { flex: 1; min-width: 0; }
-  .kid-name { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 0.98rem; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .loc-pill { display: inline-flex; align-items: center; margin-top: 3px; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+  .kid-name { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--dark); }
+  .loc-pill { display: inline-flex; align-items: center; margin-top: 3px; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
   .lp-preschool { background: var(--amber-light); color: #92400e; }
   .lp-elementary { background: var(--sky-light); color: var(--sky-dark); }
   .lp-nursery { background: var(--purple-light); color: #5b21b6; }
   .lp-other { background: var(--slate-light); color: var(--slate); }
-  .btn-co { flex-shrink: 0; padding: 9px 14px; border: none; border-radius: 10px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; -webkit-appearance: none; transition: all 0.18s; }
-  .btn-co:active { transform: scale(0.93); }
-  .co-go { background: var(--green); color: white; box-shadow: 0 3px 10px rgba(34,197,94,0.3); }
-  .co-done { background: var(--slate-light); color: #94a3b8; cursor: default; }
-  .co-nursery { background: var(--purple-light); color: #7c3aed; font-size: 0.72rem; cursor: default; }
 
-  /* Empty */
+  .room-btns { background: white; border: 2px solid var(--sky-light); border-top: 2px solid #e2e8f0; border-radius: 0 0 14px 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(14,165,233,0.1); margin-bottom: 16px; }
+  .room-btn-wrap { padding: 14px 15px; border-bottom: 1px solid #f1f5f9; }
+  .room-btn-wrap:last-child { border-bottom: none; }
+  .room-btn-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--slate); margin-bottom: 8px; }
+  .btn-room { width: 100%; padding: 14px; border: none; border-radius: 12px; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; -webkit-appearance: none; transition: all 0.18s; }
+  .btn-room:active { transform: scale(0.98); }
+  .go-room { background: var(--green); color: white; box-shadow: 0 4px 14px rgba(34,197,94,0.3); }
+  .go-room:active { background: var(--green-dark); }
+  .done-room { background: var(--slate-light); color: #94a3b8; cursor: default; }
+  .nursery-room { background: var(--purple-light); color: #7c3aed; cursor: default; font-size: 0.85rem; }
+
   .empty { background: white; border-radius: 18px; padding: 48px 24px; text-align: center; border: 2px solid var(--sky-light); box-shadow: 0 4px 20px rgba(14,165,233,0.08); }
   .empty .ei { font-size: 3rem; margin-bottom: 10px; }
   .empty p { font-weight: 600; color: var(--slate); font-size: 0.92rem; }
   .empty small { display: block; margin-top: 5px; color: #94a3b8; font-size: 0.8rem; line-height: 1.4; }
 
-  /* Spinner */
   .spin { display: inline-block; width: 18px; height: 18px; border: 2.5px solid rgba(14,165,233,0.2); border-top-color: var(--sky); border-radius: 50%; animation: rot 0.7s linear infinite; vertical-align: middle; }
   @keyframes rot { to { transform: rotate(360deg); } }
 
-  /* Toast */
   #toast { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(100px); background: var(--dark); color: white; padding: 12px 22px; border-radius: 40px; font-weight: 700; font-size: 0.88rem; box-shadow: 0 8px 28px rgba(0,0,0,0.22); white-space: nowrap; z-index: 500; opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #toast.ok { background: var(--green-dark); }
   #toast.err { background: var(--red); }
 
-  /* Settings overlay + drawer */
-  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.52); z-index: 200; display: none; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.52); z-index: 200; display: none; backdrop-filter: blur(3px); }
   #overlay.on { display: block; }
-  #drawer {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: white; border-radius: 24px 24px 0 0;
-    padding: 0 20px calc(36px + env(safe-area-inset-bottom));
-    z-index: 201; max-height: 88vh; overflow-y: auto;
-    transform: translateY(110%);
-    transition: transform 0.38s cubic-bezier(0.34,1.1,0.64,1);
-  }
+  #drawer { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; padding: 0 20px calc(36px + env(safe-area-inset-bottom)); z-index: 201; max-height: 88vh; overflow-y: auto; transform: translateY(110%); transition: transform 0.38s cubic-bezier(0.34,1.1,0.64,1); }
   #drawer.on { transform: translateY(0); }
   .drw-handle { width: 44px; height: 5px; background: #e2e8f0; border-radius: 4px; margin: 12px auto 18px; }
   .drw-title { font-family: 'Baloo 2', sans-serif; font-size: 1.15rem; font-weight: 800; color: var(--dark); margin-bottom: 16px; }
@@ -167,93 +99,74 @@
   .drw-section-lbl { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--sky-dark); margin-bottom: 12px; }
   .drw-field { margin-bottom: 10px; }
   .drw-field:last-child { margin-bottom: 0; }
-  .drw-field label { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate); margin-bottom: 4px; }
+  .drw-field label { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--slate); margin-bottom: 4px; }
   .drw-field input { width: 100%; padding: 11px 13px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--dark); background: white; -webkit-appearance: none; }
   .drw-field input:focus { outline: none; border-color: var(--sky); }
-  .btn-save { width: 100%; background: var(--sky-dark); color: white; border: none; padding: 14px; border-radius: 14px; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 16px rgba(2,132,199,0.3); -webkit-appearance: none; }
-  .btn-save:active { background: #0369a1; }
+  .btn-save { width: 100%; background: var(--sky-dark); color: white; border: none; padding: 14px; border-radius: 14px; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; -webkit-appearance: none; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="logo">Kids<span>Check</span> 📱</div>
+  <div class="logo">Kids<span>Check</span> &#128241;</div>
   <div class="hdr-right">
-    <div class="conn-pill"><div class="cdot" id="cdot"></div><span id="ctext">—</span></div>
-    <button class="btn-gear" onclick="openSettings()">⚙️</button>
+    <div class="conn-pill"><div class="cdot" id="cdot"></div><span id="ctext">--</span></div>
+    <button class="btn-gear" onclick="openSettings()">&#9881;&#65039;</button>
   </div>
 </div>
 
 <div class="body">
   <div class="scan-card">
-    <div class="scan-lbl">🔍 Scan or Enter Parent Badge</div>
+    <div class="scan-lbl">&#128269; Scan or Enter Parent Badge</div>
     <div class="scan-row">
-      <input type="text" id="barcodeInput" placeholder="Type code or tap 📷…" autocomplete="off" inputmode="text" autocorrect="off" autocapitalize="off" spellcheck="false">
-      <button class="btn-cam" id="camBtn" onclick="toggleCam()">📷</button>
+      <input type="text" id="barcodeInput" placeholder="Type code or tap camera..." autocomplete="off" inputmode="text" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="btn-cam" id="camBtn" onclick="toggleCam()">&#128247;</button>
       <button class="btn-go" onclick="handleScan()">Look Up</button>
     </div>
     <div id="camView">
       <video id="camVideo" autoplay muted playsinline></video>
-      <div class="cam-ui">
-        <div class="cam-box"><div class="cam-beam"></div></div>
-      </div>
+      <div class="cam-ui"><div class="cam-box"><div class="cam-beam"></div></div></div>
       <div class="cam-tip">Point at the barcode on the parent badge</div>
     </div>
   </div>
 
   <div id="results">
     <div class="empty">
-      <div class="ei">👋</div>
+      <div class="ei">&#128075;</div>
       <p>Ready to scan</p>
-      <small>Tap 📷 to use the camera, or type a code and tap Look Up</small>
+      <small>Tap the camera button to scan, or type a code and tap Look Up</small>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
-
-<!-- Settings -->
 <div id="overlay" onclick="closeSettings()"></div>
 <div id="drawer">
   <div class="drw-handle"></div>
-  <div class="drw-title">⚙️ Settings</div>
-
+  <div class="drw-title">&#9881;&#65039; Settings</div>
   <div class="drw-section">
     <div class="drw-section-lbl">Planning Center</div>
-    <div class="drw-field">
-      <label>App ID (Client ID)</label>
-      <input type="text" id="pcoId" placeholder="f1d6dc0a89…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    </div>
-    <div class="drw-field">
-      <label>Secret (Client Secret)</label>
-      <input type="password" id="pcoSecret" placeholder="pco_pat_88db…" autocomplete="off">
-    </div>
+    <div class="drw-field"><label>App ID (Client ID)</label><input type="text" id="pcoId" placeholder="f1d6dc0a89..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="drw-field"><label>Secret (Client Secret)</label><input type="password" id="pcoSecret" placeholder="pco_pat_88db..." autocomplete="off"></div>
   </div>
-
   <div class="drw-section">
     <div class="drw-section-lbl">Supabase</div>
-    <div class="drw-field">
-      <label>Supabase URL</label>
-      <input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    </div>
-    <div class="drw-field">
-      <label>Supabase Anon Key</label>
-      <input type="password" id="sbKey" placeholder="sb_publishable_…" autocomplete="off">
-    </div>
+    <div class="drw-field"><label>Supabase URL</label><input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="drw-field"><label>Supabase Anon Key</label><input type="password" id="sbKey" placeholder="sb_publishable_..." autocomplete="off"></div>
   </div>
-
-  <button class="btn-save" onclick="saveSettings()">💾 Save & Connect</button>
+  <button class="btn-save" onclick="saveSettings()">&#128190; Save &amp; Connect</button>
 </div>
 
 <script>
-// ── Config ────────────────────────────────────────────────
+const PROXY = 'https://kidscheck-proxy.cherokee-58e.workers.dev/proxy';
 let CFG = { pcoId:'', pcoSecret:'', sbUrl:'', sbKey:'' };
 
+// ── Config ────────────────────────────────────────────────
 function loadConfig() {
   try {
     const raw = localStorage.getItem('kc_v3');
     if (!raw) return;
-    CFG = { ...CFG, ...JSON.parse(raw) };
+    CFG = Object.assign({}, CFG, JSON.parse(raw));
     document.getElementById('pcoId').value     = CFG.pcoId     || '';
     document.getElementById('pcoSecret').value = CFG.pcoSecret || '';
     document.getElementById('sbUrl').value     = CFG.sbUrl     || '';
@@ -265,27 +178,27 @@ function loadConfig() {
 function saveSettings() {
   CFG.pcoId     = document.getElementById('pcoId').value.trim();
   CFG.pcoSecret = document.getElementById('pcoSecret').value.trim();
-  CFG.sbUrl     = document.getElementById('sbUrl').value.trim().replace(/\/+$/,'');
+  CFG.sbUrl     = document.getElementById('sbUrl').value.trim().replace(/\/+$/, '');
   CFG.sbKey     = document.getElementById('sbKey').value.trim();
   try { localStorage.setItem('kc_v3', JSON.stringify(CFG)); } catch(e) {}
   closeSettings();
   testConn();
-  showToast('✅ Settings saved!', 'ok');
+  showToast('Settings saved!', 'ok');
 }
 
 async function testConn() {
   setConn('wait');
   try {
-    const r = await fetch(`${CFG.sbUrl}/rest/v1/checkouts?select=id&limit=1`, {
-      headers: { 'apikey': CFG.sbKey, 'Authorization': `Bearer ${CFG.sbKey}` }
+    const r = await fetch(CFG.sbUrl + '/rest/v1/checkouts?select=id&limit=1', {
+      headers: { 'apikey': CFG.sbKey, 'Authorization': 'Bearer ' + CFG.sbKey }
     });
-    setConn((r.ok || r.status===406) ? 'live' : 'err');
+    setConn((r.ok || r.status === 406) ? 'live' : 'err');
   } catch { setConn('err'); }
 }
 
 function setConn(s) {
-  document.getElementById('cdot').className = 'cdot' + (s==='live'?' live':s==='err'?' err':'');
-  document.getElementById('ctext').textContent = s==='live'?'Live':s==='err'?'Error':'…';
+  document.getElementById('cdot').className = 'cdot' + (s === 'live' ? ' live' : s === 'err' ? ' err' : '');
+  document.getElementById('ctext').textContent = s === 'live' ? 'Live' : s === 'err' ? 'Error' : '...';
 }
 
 // ── Settings drawer ───────────────────────────────────────
@@ -297,313 +210,295 @@ function closeSettings() {
   document.getElementById('overlay').classList.remove('on');
   document.getElementById('drawer').classList.remove('on');
 }
-// Stop overlay tap from propagating through drawer
-document.getElementById('drawer').addEventListener('click', e => e.stopPropagation());
+document.getElementById('drawer').addEventListener('click', function(e) { e.stopPropagation(); });
 
 // ── Camera ────────────────────────────────────────────────
-let camOn = false;
-let zxReader = null;
-let nativeScanLoop = null;
+var camOn = false, zxReader = null, nativeScanLoop = null;
 
-function toggleCam() {
-  camOn ? stopCam() : startCam();
-}
+function toggleCam() { camOn ? stopCam() : startCam(); }
 
 async function startCam() {
-  const view  = document.getElementById('camView');
-  const btn   = document.getElementById('camBtn');
-  const video = document.getElementById('camVideo');
+  var view = document.getElementById('camView');
+  var btn  = document.getElementById('camBtn');
+  var ZX   = window.ZXing;
 
-  // Try ZXing first (most reliable cross-browser)
-  const ZX = window.ZXing;
   if (ZX) {
     try {
       zxReader = new ZX.BrowserMultiFormatReader();
-      const devices = await ZX.BrowserMultiFormatReader.listVideoInputDevices();
-      const backCam = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length-1];
-
-      view.classList.add('on');
-      btn.classList.add('on');
-      btn.textContent = '✕';
-      camOn = true;
-
-      await zxReader.decodeFromVideoDevice(backCam?.deviceId, 'camVideo', (result, err) => {
-        if (result) {
-          const code = result.getText();
-          stopCam();
-          document.getElementById('barcodeInput').value = code;
-          handleScan();
-        }
+      var devices = await ZX.BrowserMultiFormatReader.listVideoInputDevices();
+      var backCam = devices.find(function(d) { return /back|rear|environment/i.test(d.label); }) || devices[devices.length - 1];
+      view.classList.add('on'); btn.classList.add('on'); btn.textContent = 'X'; camOn = true;
+      await zxReader.decodeFromVideoDevice(backCam ? backCam.deviceId : undefined, 'camVideo', function(result) {
+        if (result) { stopCam(); document.getElementById('barcodeInput').value = result.getText(); handleScan(); }
       });
       return;
-    } catch(e) {
-      console.warn('ZXing failed, trying fallback:', e);
-      if (zxReader) { try { zxReader.reset(); } catch {} zxReader = null; }
-    }
+    } catch(e) { if (zxReader) { try { zxReader.reset(); } catch(x) {} zxReader = null; } }
   }
 
-  // Fallback: getUserMedia + BarcodeDetector
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
-    });
-    video.srcObject = stream;
-    view.classList.add('on');
-    btn.classList.add('on');
-    btn.textContent = '✕';
-    camOn = true;
-
+    var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+    document.getElementById('camVideo').srcObject = stream;
+    view.classList.add('on'); btn.classList.add('on'); btn.textContent = 'X'; camOn = true;
     if ('BarcodeDetector' in window) {
-      const detector = new BarcodeDetector({
-        formats: ['code_39','code_128','qr_code','ean_13','ean_8','pdf417','data_matrix','itf','codabar']
-      });
-      nativeScanLoop = setInterval(async () => {
+      var detector = new BarcodeDetector({ formats: ['code_39','code_128','qr_code','ean_13','pdf417'] });
+      nativeScanLoop = setInterval(async function() {
         if (!camOn) { clearInterval(nativeScanLoop); return; }
-        try {
-          const found = await detector.detect(video);
-          if (found.length > 0) {
-            const code = found[0].rawValue;
-            stopCam();
-            document.getElementById('barcodeInput').value = code;
-            handleScan();
-          }
-        } catch {}
+        var found = await detector.detect(document.getElementById('camVideo')).catch(function() { return []; });
+        if (found.length > 0) { stopCam(); document.getElementById('barcodeInput').value = found[0].rawValue; handleScan(); }
       }, 350);
-    } else {
-      showToast('📷 Camera open — auto-scan not supported on this browser', '');
     }
-  } catch(e) {
-    showToast('❌ Camera blocked — check your browser permissions', 'err');
-  }
+  } catch(e) { showToast('Camera blocked - check permissions', 'err'); }
 }
 
 function stopCam() {
-  const view  = document.getElementById('camView');
-  const btn   = document.getElementById('camBtn');
-  const video = document.getElementById('camVideo');
-
-  if (zxReader) { try { zxReader.reset(); } catch {} zxReader = null; }
+  var view = document.getElementById('camView'), btn = document.getElementById('camBtn'), video = document.getElementById('camVideo');
+  if (zxReader) { try { zxReader.reset(); } catch(e) {} zxReader = null; }
   if (nativeScanLoop) { clearInterval(nativeScanLoop); nativeScanLoop = null; }
-  if (video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.srcObject = null; }
-
-  view.classList.remove('on');
-  btn.classList.remove('on');
-  btn.textContent = '📷';
-  camOn = false;
+  if (video.srcObject) { video.srcObject.getTracks().forEach(function(t) { t.stop(); }); video.srcObject = null; }
+  view.classList.remove('on'); btn.classList.remove('on'); btn.textContent = ''; btn.innerHTML = '&#128247;'; camOn = false;
 }
 
 // ── Scan handler ──────────────────────────────────────────
-document.getElementById('barcodeInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') handleScan();
-});
+document.getElementById('barcodeInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') handleScan(); });
 
 async function handleScan() {
-  const input = document.getElementById('barcodeInput');
-  const code = input.value.trim();
-  if (!code) { showToast('⚠️ No code entered', 'err'); return; }
+  var input = document.getElementById('barcodeInput');
+  var code  = input.value.trim();
+  if (!code) { showToast('No code entered', 'err'); return; }
   input.value = '';
 
   if (!CFG.pcoId || !CFG.pcoSecret) {
-    setResults(`<div class="empty"><div class="ei">⚙️</div><p>Settings not filled in yet</p><small>Tap ⚙️ in the top-right corner and fill in your Planning Center and Supabase info, then tap Save & Connect</small></div>`);
+    setResults('<div class="empty"><div class="ei">&#9881;&#65039;</div><p>Settings not filled in</p><small>Tap the gear icon and enter your credentials</small></div>');
     return;
   }
 
-  setResults(`<div class="empty"><div class="ei"><span class="spin"></span></div><p>Looking up badge…</p></div>`);
-  const data = await lookupPCO(code);
+  setResults('<div class="empty"><div class="ei"><span class="spin"></span></div><p>Looking up badge...</p></div>');
+  var data = await lookupPCO(code);
   if (data) renderKids(data, code);
 }
 
 // ── Planning Center ───────────────────────────────────────
 async function lookupPCO(code) {
-  const auth = btoa(`${CFG.pcoId}:${CFG.pcoSecret}`);
+  var auth = btoa(CFG.pcoId + ':' + CFG.pcoSecret);
   try {
-    const r = await fetch(
-      `https://kidscheck-proxy.cherokee-58e.workers.dev/proxy/check-ins/v2/check_ins?where[security_code]=${encodeURIComponent(code)}&include=person,locations,household&per_page=50&filter=checked_in`,
-      { headers: { 'Authorization': `Basic ${auth}` } }
+    var r = await fetch(
+      PROXY + '/check-ins/v2/check_ins?where[security_code]=' + encodeURIComponent(code) + '&include=person,locations&per_page=50&filter=checked_in',
+      { headers: { 'Authorization': 'Basic ' + auth } }
     );
-    if (!r.ok) {
-      const body = await r.json().catch(()=>({}));
-      showToast(`❌ Planning Center error ${r.status}`, 'err');
-      console.error(body);
-      return null;
-    }
+    if (!r.ok) { showToast('Planning Center error ' + r.status, 'err'); return null; }
     return await r.json();
-  } catch(e) {
-    showToast('❌ Network error — check WiFi', 'err');
-    return null;
-  }
+  } catch(e) { showToast('Network error - check WiFi', 'err'); return null; }
 }
 
-// ── Render ────────────────────────────────────────────────
-const COLORS = ['#0ea5e9','#22c55e','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#84cc16','#ec4899'];
-function avatarColor(n) { let h=0; for (const c of (n||'')) h=(h*31+c.charCodeAt(0))%COLORS.length; return COLORS[Math.abs(h)]; }
-function initials(n) { return (n||'?').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2); }
+// ── Helpers ───────────────────────────────────────────────
+var COLORS = ['#0ea5e9','#22c55e','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#84cc16','#ec4899'];
+function avatarColor(n) { var h=0; for (var i=0;i<(n||'').length;i++) h=(h*31+n.charCodeAt(i))%COLORS.length; return COLORS[Math.abs(h)]; }
+function initials(n) { return (n||'?').split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2); }
 function locType(n) {
-  const s=(n||'').toLowerCase();
+  var s = (n||'').toLowerCase();
   if (s.includes('nursery')||s.includes('infant')||s.includes('toddler')) return 'nursery';
   if (s.includes('preschool')||s.includes('pre-k')||s.includes('prek')||s.includes('pre k')) return 'preschool';
   if (s.includes('elementary')||s.includes('grade')||s.includes('kinder')||s.includes('element')) return 'elementary';
   return 'other';
 }
+var KIDS_KEYWORDS = ['nursery','infant','toddler','preschool','pre-k','prek','pre k','elementary','grade','kinder','element','children','kids','child'];
+function isKidsRoom(loc) { var s=(loc||'').toLowerCase(); return KIDS_KEYWORDS.some(function(k){return s.includes(k);}); }
 
-const KIDS_ROOMS = ['nursery','infant','toddler','preschool','pre-k','prek','pre k','elementary','grade','kinder','element','children','kids','child'];
-function isKidsRoom(locName) {
-  const s = (locName||'').toLowerCase();
-  return KIDS_ROOMS.some(k => s.includes(k));
+function buildNameList(names) {
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return names[0] + ' and ' + names[1];
+  return names.slice(0,-1).join(', ') + ' and ' + names[names.length-1];
 }
 
+// ── Render ────────────────────────────────────────────────
 function renderKids(data, code) {
   if (!data.data || data.data.length === 0) {
-    setResults(`<div class="empty"><div class="ei">🔍</div><p>No active check-ins found</p><small>Badge code: ${code}<br>Make sure kids are checked in before scanning.</small></div>`);
+    setResults('<div class="empty"><div class="ei">&#128269;</div><p>No check-ins found</p><small>Badge: ' + code + '</small></div>');
     return;
   }
 
-  const people={}, locations={};
-  (data.included||[]).forEach(i => {
-    if (i.type==='Person') people[i.id]=i;
-    if (i.type==='Location') locations[i.id]=i;
+  var people = {}, locations = {};
+  (data.included || []).forEach(function(i) {
+    if (i.type === 'Person')   people[i.id]    = i;
+    if (i.type === 'Location') locations[i.id] = i;
   });
 
-  const allCheckins = data.data.map(ci => {
-    const pRel   = ci.relationships?.person?.data;
-    const locRel = ci.relationships?.locations?.data?.[0] || ci.relationships?.location?.data;
-    const p      = pRel ? people[pRel.id] : null;
-    const locObj = locRel ? locations[locRel.id] : null;
-    const first  = p?.attributes?.first_name || ci.attributes?.first_name || 'Unknown';
-    const last   = p?.attributes?.last_name  || ci.attributes?.last_name  || '';
-    const loc    = locObj?.attributes?.name || ci.attributes?.location_name || '';
-    // Each check-in has its own security_code — use that to match the scanned badge exactly
-    const ciCode = ci.attributes?.security_code || ci.attributes?.code || '';
+  var allCheckins = data.data.map(function(ci) {
+    var pRel   = ci.relationships && ci.relationships.person && ci.relationships.person.data;
+    var locArr = ci.relationships && ci.relationships.locations && ci.relationships.locations.data;
+    var locRel = (locArr && locArr[0]) || (ci.relationships && ci.relationships.location && ci.relationships.location.data);
+    var p      = pRel ? people[pRel.id] : null;
+    var locObj = locRel ? locations[locRel.id] : null;
+    var first  = (p && p.attributes && p.attributes.first_name) || (ci.attributes && ci.attributes.first_name) || 'Unknown';
+    var last   = (p && p.attributes && p.attributes.last_name)  || (ci.attributes && ci.attributes.last_name)  || '';
+    var loc    = (locObj && locObj.attributes && locObj.attributes.name) || (ci.attributes && ci.attributes.location_name) || '';
+    var ciCode = (ci.attributes && ci.attributes.security_code) || (ci.attributes && ci.attributes.code) || '';
     return {
       id: ci.id,
-      name: `${first} ${last}`.trim(),
+      name: (first + ' ' + last).trim(),
+      firstName: first,
       lastName: last,
       location: loc,
       lt: locType(loc),
-      out: !!ci.attributes?.checked_out_at,
-      kind: ci.attributes?.kind || '',
+      out: !!(ci.attributes && ci.attributes.checked_out_at),
+      kind: (ci.attributes && ci.attributes.kind) || '',
       secCode: ciCode
     };
   });
 
-  // Filter out volunteers and non-kids-room check-ins
-  const kidsOnly = allCheckins.filter(c => {
+  // Filter out volunteers and non-kids rooms
+  var kidsOnly = allCheckins.filter(function(c) {
     if (c.kind && c.kind.toLowerCase().includes('volunteer')) return false;
     if (!c.location) return true;
     return isKidsRoom(c.location);
   });
 
   if (kidsOnly.length === 0) {
-    setResults(`<div class="empty"><div class="ei">🔍</div><p>No kids found for this badge</p><small>Badge code: ${code}</small></div>`);
+    setResults('<div class="empty"><div class="ei">&#128269;</div><p>No kids found for this badge</p></div>');
     return;
   }
 
-  // Try to match by security_code on each check-in record first
-  // PCO returns the individual check-in's code which should match the scanned badge
-  const exactMatch = kidsOnly.filter(c => c.secCode && c.secCode === code);
-  
-  // If exact code match found, use those — otherwise fall back to all kids
-  // then group by last name to find the primary family
-  let kids;
+  // Exact security code match first, then fall back to first last name
+  var exactMatch = kidsOnly.filter(function(c) { return c.secCode && c.secCode === code; });
+  var kids;
   if (exactMatch.length > 0) {
     kids = exactMatch;
   } else {
-    // Group by last name, pick the group whose last name appears first in the list
-    // (first check-in returned is most likely the scanned family)
-    const firstLastName = kidsOnly[0]?.lastName || '';
-    const sameLastName = kidsOnly.filter(c => c.lastName === firstLastName);
-    kids = sameLastName.length > 0 ? sameLastName : kidsOnly;
+    var firstLast = kidsOnly[0] ? kidsOnly[0].lastName : '';
+    var sameLast  = kidsOnly.filter(function(c) { return c.lastName === firstLast; });
+    kids = sameLast.length > 0 ? sameLast : kidsOnly;
   }
 
-  const famName = kids[0]?.lastName || kids[0]?.name.split(' ').slice(-1)[0] || 'Family';
+  var famName = (kids[0] && kids[0].lastName) ? kids[0].lastName : 'Family';
 
-  let html = `<div class="fam-banner">👨‍👩‍👧‍👦 ${famName} Family — ${kids.length} kid${kids.length!==1?'s':''}</div><div class="kid-list">`;
-
-  kids.forEach(kid => {
-    const safeName = kid.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const safeLoc  = kid.location.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    let btn = '';
-    if (kid.lt==='nursery')   btn = `<button class="btn-co co-nursery" disabled>Nursery</button>`;
-    else if (kid.out)          btn = `<button class="btn-co co-done" disabled>✓ Done</button>`;
-    else                       btn = `<button class="btn-co co-go" onclick="checkout('${kid.id}','${safeName}','${safeLoc}','${kid.lt}')">Check Out</button>`;
-
-    html += `
-      <div class="kid-row" id="row-${kid.id}">
-        <div class="avi" style="background:${avatarColor(kid.name)}">${initials(kid.name)}</div>
-        <div class="kid-info">
-          <div class="kid-name">${kid.name}</div>
-          <span class="loc-pill lp-${kid.lt}">${kid.location}</span>
-        </div>
-        ${btn}
-      </div>`;
+  // Group by room
+  var roomGroups = {};
+  kids.forEach(function(kid) {
+    var key = kid.lt + '|' + kid.location;
+    if (!roomGroups[key]) roomGroups[key] = { lt: kid.lt, location: kid.location, kids: [] };
+    roomGroups[key].kids.push(kid);
   });
 
-  html += `</div>`;
+  // Build kid list rows
+  var html = '<div class="fam-banner">&#128106; ' + famName + ' Family &mdash; ' + kids.length + ' kid' + (kids.length !== 1 ? 's' : '') + '</div>';
+  html += '<div class="kid-list">';
+  kids.forEach(function(kid) {
+    html += '<div class="kid-row" id="row-' + kid.id + '" style="' + (kid.out ? 'opacity:0.4' : '') + '">';
+    html += '<div class="avi" style="background:' + avatarColor(kid.name) + '">' + initials(kid.name) + '</div>';
+    html += '<div class="kid-info"><div class="kid-name">' + kid.name + '</div>';
+    html += '<span class="loc-pill lp-' + kid.lt + '">' + (kid.location || 'Unknown') + '</span></div>';
+    if (kid.out) html += '<span style="font-size:0.78rem;color:#94a3b8;font-weight:700;">&#10003; Done</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Room checkout buttons
+  html += '<div class="room-btns">';
+  Object.values(roomGroups).forEach(function(group) {
+    var allOut     = group.kids.every(function(k) { return k.out; });
+    var isNursery  = group.lt === 'nursery';
+    var firstNames = group.kids.map(function(k) { return k.firstName; }).join(', ');
+    var ids        = group.kids.map(function(k) { return k.id; }).join(',');
+    var namesCsv   = encodeURIComponent(group.kids.map(function(k) { return k.firstName; }).join(','));
+    var safeLoc    = encodeURIComponent(group.location);
+    var icon       = group.lt === 'preschool' ? '&#127775;' : group.lt === 'nursery' ? '&#127868;' : '&#128640;';
+
+    html += '<div class="room-btn-wrap">';
+    html += '<div class="room-btn-label">' + icon + ' ' + (group.location || group.lt) + ' &mdash; ' + firstNames + '</div>';
+
+    if (isNursery) {
+      html += '<button class="btn-room nursery-room" disabled>Nursery &mdash; separate process</button>';
+    } else if (allOut) {
+      html += '<button class="btn-room done-room" disabled>&#10003; Checked Out</button>';
+    } else {
+      var label = group.kids.length > 1 ? 'Check Out ' + group.kids.length + ' Kids' : 'Check Out ' + firstNames;
+      html += '<button class="btn-room go-room" id="rbtn-' + ids + '" onclick="checkoutRoom(\'' + ids + '\',\'' + namesCsv + '\',\'' + safeLoc + '\',\'' + group.lt + '\')">' + label + '</button>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
   setResults(html);
 }
 
 function setResults(h) { document.getElementById('results').innerHTML = h; }
 
-// ── Checkout ──────────────────────────────────────────────
-const doneSet = new Set();
+// ── Checkout room ─────────────────────────────────────────
+var doneSet = new Set();
+var pendingAnnouncements = {};
 
-async function checkout(id, name, location, lt) {
-  if (doneSet.has(id)) return;
-  doneSet.add(id);
+async function checkoutRoom(idsStr, namesEncoded, locEncoded, lt) {
+  var ids      = idsStr.split(',');
+  var names    = decodeURIComponent(namesEncoded).split(',');
+  var location = decodeURIComponent(locEncoded);
 
-  const btn = document.querySelector(`#row-${id} .btn-co`);
-  if (btn) { btn.disabled=true; btn.innerHTML=`<span class="spin" style="width:14px;height:14px;border-width:2px"></span>`; }
+  var rbtn = document.getElementById('rbtn-' + idsStr);
+  if (rbtn) { rbtn.disabled = true; rbtn.innerHTML = '<span class="spin" style="width:14px;height:14px;border-width:2px"></span> Checking out...'; }
 
-  // 1. Mark checked out in Planning Center
+  // PATCH all kids in Planning Center
   if (CFG.pcoId && CFG.pcoSecret) {
-    try {
-      const auth = btoa(`${CFG.pcoId}:${CFG.pcoSecret}`);
-      await fetch(`https://kidscheck-proxy.cherokee-58e.workers.dev/proxy/check-ins/v2/check_ins/${id}`, {
+    var auth = btoa(CFG.pcoId + ':' + CFG.pcoSecret);
+    await Promise.all(ids.map(function(id) {
+      return fetch(PROXY + '/check-ins/v2/check_ins/' + id, {
         method: 'PATCH',
-        headers: { 'Authorization':`Basic ${auth}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ data:{ type:'CheckIn', id, attributes:{ checked_out_at: new Date().toISOString() } } })
-      });
-    } catch(e) { console.warn('PCO patch:', e); }
+        headers: { 'Authorization': 'Basic ' + auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { type: 'CheckIn', id: id, attributes: { checked_out_at: new Date().toISOString() } } })
+      }).catch(function(e) { console.warn('PCO patch:', e); });
+    }));
   }
 
-  // 2. Update button
-  if (btn) { btn.className='btn-co co-done'; btn.innerHTML='✓ Done'; btn.disabled=true; }
+  // Fade kid rows
+  ids.forEach(function(id) {
+    doneSet.add(id);
+    var row = document.getElementById('row-' + id);
+    if (row) row.style.opacity = '0.4';
+  });
 
-  // 3. Send to Supabase so display screens announce
-  if (CFG.sbUrl && CFG.sbKey && (lt==='preschool'||lt==='elementary')) {
-    try {
-      await fetch(`${CFG.sbUrl}/rest/v1/checkouts`, {
-        method: 'POST',
-        headers: {
-          'apikey': CFG.sbKey,
-          'Authorization': `Bearer ${CFG.sbKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          child_name:    name,
-          location:      location,
-          location_type: lt,
-          announced_at:  new Date().toISOString(),
-          expires_at:    new Date(Date.now() + 65000).toISOString()
-        })
-      });
-    } catch(e) { console.warn('Supabase publish:', e); }
-  }
+  if (rbtn) { rbtn.className = 'btn-room done-room'; rbtn.innerHTML = '&#10003; Checked Out'; rbtn.disabled = true; }
 
-  showToast(`✅ ${name} checked out!`, 'ok');
+  // Queue announcement with 5-second delay per room
+  var roomKey = lt + '|' + location;
+  if (pendingAnnouncements[roomKey]) clearTimeout(pendingAnnouncements[roomKey]);
+  pendingAnnouncements[roomKey] = setTimeout(function() {
+    fireAnnouncement(names, location, lt);
+    delete pendingAnnouncements[roomKey];
+  }, 5000);
+
+  showToast('Announcing ' + buildNameList(names) + ' in 5s...', 'ok');
+}
+
+async function fireAnnouncement(names, location, lt) {
+  if (!CFG.sbUrl || !CFG.sbKey) return;
+  var nameList = buildNameList(names);
+  try {
+    await fetch(CFG.sbUrl + '/rest/v1/checkouts', {
+      method: 'POST',
+      headers: {
+        'apikey': CFG.sbKey,
+        'Authorization': 'Bearer ' + CFG.sbKey,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        child_name:    nameList,
+        location:      location,
+        location_type: lt,
+        announced_at:  new Date().toISOString(),
+        expires_at:    new Date(Date.now() + 65000).toISOString()
+      })
+    });
+  } catch(e) { console.warn('Supabase:', e); }
 }
 
 // ── Toast ─────────────────────────────────────────────────
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = `show${type?' '+type:''}`;
+  t.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(t._t);
-  t._t = setTimeout(() => { t.className = type||''; }, 3200);
+  t._t = setTimeout(function() { t.className = type || ''; }, 3500);
 }
 
-// ── Init ──────────────────────────────────────────────────
 loadConfig();
 </script>
 </body>
