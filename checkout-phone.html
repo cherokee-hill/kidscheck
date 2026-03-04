@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KidsCheck · Volunteer</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.18.6/index.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root {
     --sky: #0ea5e9; --sky-dark: #0284c7; --sky-light: #e0f2fe;
@@ -43,14 +43,11 @@
   .btn-go { background: var(--sky-dark); color: white; border: none; padding: 13px 16px; border-radius: 12px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; white-space: nowrap; -webkit-appearance: none; box-shadow: 0 3px 12px rgba(2,132,199,0.3); }
   .btn-go:active { transform: scale(0.96); }
 
-  #camView { display: none; margin-top: 12px; border-radius: 14px; overflow: hidden; background: #000; position: relative; }
+  #camView { display: none; margin-top: 12px; border-radius: 14px; overflow: hidden; background: #000; }
   #camView.on { display: block; }
-  #camVideo { width: 100%; display: block; max-height: 230px; object-fit: cover; }
-  .cam-ui { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-  .cam-box { width: 200px; height: 110px; border: 3px solid var(--sky); border-radius: 12px; box-shadow: 0 0 0 2000px rgba(0,0,0,0.42); position: relative; }
-  .cam-beam { position: absolute; left: 10px; right: 10px; height: 2px; background: var(--sky); animation: beam 1.5s ease-in-out infinite; box-shadow: 0 0 8px var(--sky); }
-  @keyframes beam { 0%{top:15%}50%{top:85%}100%{top:15%} }
-  .cam-tip { position: absolute; bottom: 9px; left: 0; right: 0; text-align: center; color: white; font-size: 0.73rem; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+  #camView video { width: 100% !important; border-radius: 14px; }
+  #camView img { display: none !important; }
+  #reader__scan_region { border-radius: 14px; overflow: hidden; }
 
   .fam-banner { background: linear-gradient(135deg, var(--sky-dark), #0369a1); color: white; border-radius: 14px 14px 0 0; padding: 13px 16px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 0.95rem; }
   .kid-list { background: white; border: 2px solid var(--sky-light); border-top: none; overflow: hidden; }
@@ -123,11 +120,7 @@
       <button class="btn-cam" id="camBtn" onclick="toggleCam()">&#128247;</button>
       <button class="btn-go" onclick="handleScan()">Look Up</button>
     </div>
-    <div id="camView">
-      <video id="camVideo" autoplay muted playsinline></video>
-      <div class="cam-ui"><div class="cam-box"><div class="cam-beam"></div></div></div>
-      <div class="cam-tip">Point at the barcode on the parent badge</div>
-    </div>
+    <div id="camView"></div>
   </div>
 
   <div id="results">
@@ -213,49 +206,55 @@ function closeSettings() {
 document.getElementById('drawer').addEventListener('click', function(e) { e.stopPropagation(); });
 
 // ── Camera ────────────────────────────────────────────────
-var camOn = false, zxReader = null, nativeScanLoop = null;
+var camOn = false, html5Scanner = null;
 
 function toggleCam() { camOn ? stopCam() : startCam(); }
 
-async function startCam() {
+function startCam() {
   var view = document.getElementById('camView');
   var btn  = document.getElementById('camBtn');
-  var ZX   = window.ZXing;
 
-  if (ZX) {
-    try {
-      zxReader = new ZX.BrowserMultiFormatReader();
-      var devices = await ZX.BrowserMultiFormatReader.listVideoInputDevices();
-      var backCam = devices.find(function(d) { return /back|rear|environment/i.test(d.label); }) || devices[devices.length - 1];
-      view.classList.add('on'); btn.classList.add('on'); btn.textContent = 'X'; camOn = true;
-      await zxReader.decodeFromVideoDevice(backCam ? backCam.deviceId : undefined, 'camVideo', function(result) {
-        if (result) { stopCam(); document.getElementById('barcodeInput').value = result.getText(); handleScan(); }
-      });
-      return;
-    } catch(e) { if (zxReader) { try { zxReader.reset(); } catch(x) {} zxReader = null; } }
-  }
+  // html5-qrcode renders into a div, not a video tag — use camView directly
+  view.classList.add('on');
+  btn.classList.add('on');
+  btn.innerHTML = '&#10005;';
+  camOn = true;
 
-  try {
-    var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
-    document.getElementById('camVideo').srcObject = stream;
-    view.classList.add('on'); btn.classList.add('on'); btn.textContent = 'X'; camOn = true;
-    if ('BarcodeDetector' in window) {
-      var detector = new BarcodeDetector({ formats: ['code_39','code_128','qr_code','ean_13','pdf417'] });
-      nativeScanLoop = setInterval(async function() {
-        if (!camOn) { clearInterval(nativeScanLoop); return; }
-        var found = await detector.detect(document.getElementById('camVideo')).catch(function() { return []; });
-        if (found.length > 0) { stopCam(); document.getElementById('barcodeInput').value = found[0].rawValue; handleScan(); }
-      }, 350);
+  html5Scanner = new Html5Qrcode('camView');
+  html5Scanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 220, height: 110 } },
+    function(decodedText) {
+      // Success — got a barcode
+      stopCam();
+      document.getElementById('barcodeInput').value = decodedText;
+      handleScan();
+    },
+    function(err) {
+      // Scan attempt failed — keep trying silently
     }
-  } catch(e) { showToast('Camera blocked - check permissions', 'err'); }
+  ).catch(function(e) {
+    showToast('Camera blocked - check Safari permissions', 'err');
+    view.classList.remove('on');
+    btn.classList.remove('on');
+    btn.innerHTML = '&#128247;';
+    camOn = false;
+  });
 }
 
 function stopCam() {
-  var view = document.getElementById('camView'), btn = document.getElementById('camBtn'), video = document.getElementById('camVideo');
-  if (zxReader) { try { zxReader.reset(); } catch(e) {} zxReader = null; }
-  if (nativeScanLoop) { clearInterval(nativeScanLoop); nativeScanLoop = null; }
-  if (video.srcObject) { video.srcObject.getTracks().forEach(function(t) { t.stop(); }); video.srcObject = null; }
-  view.classList.remove('on'); btn.classList.remove('on'); btn.textContent = ''; btn.innerHTML = '&#128247;'; camOn = false;
+  var view = document.getElementById('camView');
+  var btn  = document.getElementById('camBtn');
+  if (html5Scanner) {
+    html5Scanner.stop().then(function() {
+      html5Scanner.clear();
+      html5Scanner = null;
+    }).catch(function() { html5Scanner = null; });
+  }
+  view.classList.remove('on');
+  btn.classList.remove('on');
+  btn.innerHTML = '&#128247;';
+  camOn = false;
 }
 
 // ── Scan handler ──────────────────────────────────────────
