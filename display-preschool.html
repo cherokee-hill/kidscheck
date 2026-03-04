@@ -200,6 +200,17 @@ document.addEventListener('click', unlockSpeech, {once: false});
 document.addEventListener('touchstart', unlockSpeech, {once: false});
 window.speechSynthesis?.getVoices?.();
 window.speechSynthesis?.addEventListener?.('voiceschanged',()=>window.speechSynthesis.getVoices());
+
+// iOS Safari: unlock speech on first user tap so delayed announcements work
+var speechUnlocked=false;
+function unlockSpeech(){
+  if(speechUnlocked||!window.speechSynthesis) return;
+  speechUnlocked=true;
+  var u=new SpeechSynthesisUtterance(''); u.volume=0;
+  window.speechSynthesis.speak(u);
+}
+document.addEventListener('touchstart',unlockSpeech,{once:true});
+document.addEventListener('click',unlockSpeech,{once:true});
 if('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
 loadConfig();
 </script>
