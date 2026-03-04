@@ -358,15 +358,15 @@ function renderKids(data, code) {
     return;
   }
 
-  // Exact security code match first, then fall back to first last name
-  var exactMatch = kidsOnly.filter(function(c) { return c.secCode && c.secCode === code; });
-  var kids;
-  if (exactMatch.length > 0) {
-    kids = exactMatch;
-  } else {
-    var firstLast = kidsOnly[0] ? kidsOnly[0].lastName : '';
-    var sameLast  = kidsOnly.filter(function(c) { return c.lastName === firstLast; });
-    kids = sameLast.length > 0 ? sameLast : kidsOnly;
+  // Only show kids whose check-in security code exactly matches the scanned badge
+  // No last-name fallback — prevents mixing families with same last name
+  var kids = kidsOnly.filter(function(c) { return c.secCode && c.secCode === code; });
+
+  if (kids.length === 0) {
+    // No exact match — the badge code may be the parent tag (not child tag)
+    // Show a helpful message rather than guessing
+    setResults('<div class="empty"><div class="ei">&#128269;</div><p>Badge not matched</p><small>Code: ' + code + '<br>This badge did not match any checked-in kids exactly.<br>Try scanning the child\'s badge instead of the parent tag.</small></div>');
+    return;
   }
 
   var famName = (kids[0] && kids[0].lastName) ? kids[0].lastName : 'Family';
