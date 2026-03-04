@@ -266,17 +266,52 @@ function addChip(name) {
 }
 
 // ── Speech ────────────────────────────────────────────────
-function speak(name) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  var msg = 'Attention ' + name + ', your adult is here for pickup. ' + name + ', grab your things and head to the double doors.';
-  var u = new SpeechSynthesisUtterance(msg);
-  u.rate = 0.88; u.pitch = 1.0; u.volume = 1;
-  var voices = window.speechSynthesis.getVoices();
-  var v = voices.filter(function(v) { return /Samantha|Karen|Victoria|Google US English/i.test(v.name); })[0];
-  if (v) u.voice = v;
-  window.speechSynthesis.speak(u);
+// Multi-method TTS: tries Web Speech first, falls back to ResponsiveVoice,
+// then falls back to Google Translate TTS audio element (works on Fire Stick)
+
+var rvReady = false;
+
+function loadResponsiveVoice() {
+  if (window.responsiveVoice) { rvReady = true; return; }
+  var s = document.createElement('script');
+  s.src = 'https://code.responsivevoice.org/responsivevoice.js?key=FREE';
+  s.onload = function() { rvReady = true; };
+  document.head.appendChild(s);
 }
+loadResponsiveVoice();
+
+function speak(name) {
+  var msg = 'Attention ' + name + ', your adult is here for pickup. ' + name + ', grab your things and head to the double doors.';
+
+  // Method 1: ResponsiveVoice (works on Fire Stick Silk browser)
+  if (window.responsiveVoice && window.responsiveVoice.voiceSupport()) {
+    window.responsiveVoice.cancel();
+    window.responsiveVoice.speak(msg, 'US English Female', { rate: 0.9, pitch: 1, volume: 1 });
+    return;
+  }
+
+  // Method 2: Web Speech API
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(msg);
+    u.rate = 0.88; u.pitch = 1.0; u.volume = 1;
+    var voices = window.speechSynthesis.getVoices();
+    var v = voices.filter(function(x) { return /Samantha|Karen|Victoria|Google US English/i.test(x.name); })[0];
+    if (v) u.voice = v;
+    window.speechSynthesis.speak(u);
+    return;
+  }
+
+  // Method 3: Google Translate TTS audio (last resort)
+  try {
+    var encoded = encodeURIComponent(msg.slice(0, 200));
+    var url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=' + encoded;
+    var audio = new Audio(url);
+    audio.volume = 1;
+    audio.play().catch(function(e) { console.warn('Audio play failed:', e); });
+  } catch(e) { console.warn('TTS fallback failed:', e); }
+}
+
 if (window.speechSynthesis) {
   window.speechSynthesis.getVoices();
   window.speechSynthesis.addEventListener('voiceschanged', function() {
