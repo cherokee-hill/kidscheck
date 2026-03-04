@@ -281,7 +281,7 @@ async function lookupPCO(code) {
   var auth = btoa(CFG.pcoId + ':' + CFG.pcoSecret);
   try {
     var r = await fetch(
-      PROXY + '/check-ins/v2/check_ins?where[security_code]=' + encodeURIComponent(code) + '&include=person,locations&per_page=50&filter=checked_in',
+      PROXY + '/check-ins/v2/check_ins?where[security_code]=' + encodeURIComponent(code) + '&include=person,locations,event_period&per_page=50&filter=checked_in',
       { headers: { 'Authorization': 'Basic ' + auth } }
     );
     if (!r.ok) { showToast('Planning Center error ' + r.status, 'err'); return null; }
@@ -332,6 +332,19 @@ function renderKids(data, code) {
     var last   = (p && p.attributes && p.attributes.last_name)  || (ci.attributes && ci.attributes.last_name)  || '';
     var loc    = (locObj && locObj.attributes && locObj.attributes.name) || (ci.attributes && ci.attributes.location_name) || '';
     var ciCode = (ci.attributes && ci.attributes.security_code) || (ci.attributes && ci.attributes.code) || '';
+    // Household ID — used to group family members reliably
+    var hhRel  = p && p.relationships && p.relationships.household && p.relationships.household.data;
+    var hhId   = hhRel ? hhRel.id : (last || 'unknown');
+    // Check-in date — only show kids checked in today
+    var checkedInAt = (ci.attributes && ci.attributes.created_at) || '';
+    var checkedInToday = false;
+    if (checkedInAt) {
+      var ciDate = new Date(checkedInAt);
+      var now    = new Date();
+      checkedInToday = ciDate.getFullYear() === now.getFullYear() &&
+                       ciDate.getMonth()    === now.getMonth()    &&
+                       ciDate.getDate()     === now.getDate();
+    }
     return {
       id: ci.id,
       name: (first + ' ' + last).trim(),
@@ -341,13 +354,16 @@ function renderKids(data, code) {
       lt: locType(loc),
       out: !!(ci.attributes && ci.attributes.checked_out_at),
       kind: (ci.attributes && ci.attributes.kind) || '',
-      secCode: ciCode
+      secCode: ciCode,
+      hhId: hhId,
+      checkedInToday: checkedInToday
     };
   });
 
-  // Filter out volunteers, non-kids rooms, and already checked-out kids
+  // Filter: must be checked in today, not yet checked out, not a volunteer, in a kids room
   var kidsOnly = allCheckins.filter(function(c) {
-    if (c.out) return false; // already checked out — don't show
+    if (c.out) return false;
+    if (!c.checkedInToday) return false; // ignore check-ins from other days
     if (c.kind && c.kind.toLowerCase().includes('volunteer')) return false;
     if (!c.location) return true;
     return isKidsRoom(c.location);
@@ -358,15 +374,30 @@ function renderKids(data, code) {
     return;
   }
 
-  // Only show kids whose check-in security code exactly matches the scanned badge
-  // No last-name fallback — prevents mixing families with same last name
-  var kids = kidsOnly.filter(function(c) { return c.secCode && c.secCode === code; });
+  // Step 1: Find all kids whose security code matches the scanned badge
+  var codeMatches = kidsOnly.filter(function(c) { return c.secCode && c.secCode === code; });
 
-  if (kids.length === 0) {
-    // No exact match — the badge code may be the parent tag (not child tag)
-    // Show a helpful message rather than guessing
-    setResults('<div class="empty"><div class="ei">&#128269;</div><p>Badge not matched</p><small>Code: ' + code + '<br>This badge did not match any checked-in kids exactly.<br>Try scanning the child\'s badge instead of the parent tag.</small></div>');
+  if (codeMatches.length === 0) {
+    setResults('<div class="empty"><div class="ei">&#128269;</div><p>No check-ins found for this badge</p><small>Code: ' + code + '<br>Make sure kids are checked in today.</small></div>');
     return;
+  }
+
+  // Step 2: Group by household ID — pick the household that appears most
+  // This isolates one family even when the security code is shared across many families
+  var hhCounts = {};
+  codeMatches.forEach(function(c) {
+    hhCounts[c.hhId] = (hhCounts[c.hhId] || 0) + 1;
+  });
+
+  // Find the household with the most kids checked in under this code
+  // (the family whose parent badge was actually scanned)
+  var topHhId = Object.keys(hhCounts).sort(function(a,b){ return hhCounts[b]-hhCounts[a]; })[0];
+  var kids = codeMatches.filter(function(c) { return c.hhId === topHhId; });
+
+  // If household IDs weren't returned, fall back to last name of first result
+  if (kids.length === 0 || (kids.length === 1 && topHhId === kids[0].lastName)) {
+    var topLast = codeMatches[0].lastName;
+    kids = codeMatches.filter(function(c) { return c.lastName === topLast; });
   }
 
   var famName = (kids[0] && kids[0].lastName) ? kids[0].lastName : 'Family';
