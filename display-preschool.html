@@ -76,8 +76,9 @@
 
 <script>
 // ── CREDENTIALS BAKED IN — no settings screen needed ─────
-const SB_URL = 'https://uxwrkdjhsxlyncrgclwq.supabase.co';
-const SB_KEY = 'sb_publishable_-EfpGapXtN6tckmBhZN8mA_-l_XhcqQ';
+const SB_URL  = 'https://uxwrkdjhsxlyncrgclwq.supabase.co';
+const SB_KEY  = 'sb_publishable_-EfpGapXtN6tckmBhZN8mA_-l_XhcqQ';
+const PROXY   = 'https://kidscheck-proxy.cherokee-58e.workers.dev';
 
 // ── Bubbles ───────────────────────────────────────────────
 (function(){
@@ -110,8 +111,12 @@ function setStatus(s){
 // ── Poll Supabase ─────────────────────────────────────────
 async function poll(){
   try{
-    const r=await fetch(`${SB_URL}/rest/v1/checkouts?select=*&order=id.desc&limit=20`,{
-      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
+    const r=await fetch(`${PROXY}/supabase/rest/v1/checkouts?select=*&order=id.desc&limit=20`,{
+      headers:{
+        'apikey':SB_KEY,
+        'Authorization':`Bearer ${SB_KEY}`,
+        'X-Supabase-URL':SB_URL
+      }
     });
     if(!r.ok){ setStatus('err'); return; }
     setStatus('live');
