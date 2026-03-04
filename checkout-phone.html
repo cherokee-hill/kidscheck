@@ -345,8 +345,9 @@ function renderKids(data, code) {
     };
   });
 
-  // Filter out volunteers and non-kids rooms
+  // Filter out volunteers, non-kids rooms, and already checked-out kids
   var kidsOnly = allCheckins.filter(function(c) {
+    if (c.out) return false; // already checked out — don't show
     if (c.kind && c.kind.toLowerCase().includes('volunteer')) return false;
     if (!c.location) return true;
     return isKidsRoom(c.location);
@@ -581,6 +582,21 @@ function showToast(msg, type) {
 }
 
 loadConfig();
+
+// iOS Safari requires speech to be "unlocked" by a real user tap first.
+// We fire a silent utterance on the first touch so delayed announcements work.
+var speechUnlocked = false;
+function unlockSpeech() {
+  if (speechUnlocked || !window.speechSynthesis) return;
+  speechUnlocked = true;
+  var u = new SpeechSynthesisUtterance('');
+  u.volume = 0;
+  window.speechSynthesis.speak(u);
+  document.removeEventListener('touchstart', unlockSpeech);
+  document.removeEventListener('click', unlockSpeech);
+}
+document.addEventListener('touchstart', unlockSpeech, { once: true });
+document.addEventListener('click', unlockSpeech, { once: true });
 </script>
 </body>
 </html>
