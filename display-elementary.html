@@ -31,8 +31,7 @@
   .name-card::after { content:''; position:absolute; inset:2px; background:#0f172a; border-radius:26px; z-index:-1; }
   @keyframes rotateBorder { to{transform:rotate(360deg)} }
   .card-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(56,189,248,.15); border:1px solid rgba(56,189,248,.3); color:#38bdf8; padding:5px 16px; border-radius:20px; font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; }
-  .big-name { font-family:'Outfit',sans-serif; font-size:clamp(1.4rem,4vw,3.8rem); font-weight:900; color:white; line-height:1.2; letter-spacing:-1px; margin-bottom:16px; animation:nameIn .5s cubic-bezier(.34,1.56,.64,1) .15s both; word-break:break-word; }
-  @keyframes nameIn { from{opacity:0;transform:translateY(24px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+  .big-name { font-family:'Outfit',sans-serif; font-size:clamp(1.4rem,4vw,3.8rem); font-weight:900; color:white; line-height:1.2; letter-spacing:-1px; margin-bottom:16px; word-break:break-word; }
   .location-tag { display:inline-flex; align-items:center; gap:8px; background:rgba(52,211,153,.12); border:1.5px solid rgba(52,211,153,.3); color:#34d399; padding:9px 28px; border-radius:40px; font-size:1.1rem; font-weight:700; margin-bottom:22px; }
   .pickup-msg { font-size:1rem; color:rgba(255,255,255,.4); font-weight:600; margin-bottom:28px; }
   .timer-track { background:rgba(255,255,255,.08); border-radius:40px; height:8px; overflow:hidden; width:100%; max-width:440px; margin:0 auto; }
@@ -40,19 +39,20 @@
   .queue-bar { background:rgba(255,255,255,.03); border-top:1px solid rgba(255,255,255,.07); padding:16px 32px; position:relative; z-index:10; flex-shrink:0; }
   .queue-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:rgba(255,255,255,.25); margin-bottom:9px; }
   .queue-chips { display:flex; gap:8px; flex-wrap:wrap; }
-  .chip { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:4px 14px; font-weight:700; font-size:.82rem; color:rgba(255,255,255,.55); animation:chipIn .3s ease; }
-  @keyframes chipIn { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+  .chip { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:4px 14px; font-weight:700; font-size:.82rem; color:rgba(255,255,255,.55); }
   .none-yet { font-size:.82rem; color:rgba(255,255,255,.15); font-weight:600; }
-  .gear-btn { position:fixed; bottom:70px; right:14px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-radius:50%; width:36px; height:36px; font-size:1rem; cursor:pointer; z-index:50; color:rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; }
-  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:100; backdrop-filter:blur(8px); }
+  .gear-btn { position:fixed; bottom:16px; right:16px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-radius:50%; width:38px; height:38px; font-size:1rem; cursor:pointer; z-index:50; color:rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center; }
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:200; backdrop-filter:blur(8px); }
+  .overlay.hidden { display:none; }
   .overlay-box { background:#1e293b; border:1px solid rgba(255,255,255,.1); border-radius:22px; padding:36px; max-width:440px; width:90%; box-shadow:0 32px 80px rgba(0,0,0,.6); }
   .overlay-box h2 { font-family:'Outfit',sans-serif; font-size:1.6rem; font-weight:900; color:#38bdf8; margin-bottom:4px; }
   .overlay-box p { font-size:.85rem; color:rgba(255,255,255,.5); margin-bottom:22px; }
   .o-field { margin-bottom:13px; }
   .o-field label { display:block; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:rgba(255,255,255,.4); margin-bottom:4px; }
-  .o-field input { width:100%; padding:10px 13px; border:1.5px solid rgba(255,255,255,.12); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.9rem; background:rgba(255,255,255,.07); color:white; }
+  .o-field input { width:100%; padding:11px 13px; border:1.5px solid rgba(255,255,255,.12); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.95rem; background:rgba(255,255,255,.07); color:white; }
   .o-field input:focus { outline:none; border-color:#38bdf8; }
-  .btn-connect { width:100%; background:linear-gradient(135deg,#0ea5e9,#38bdf8); color:white; border:none; padding:13px; border-radius:12px; font-family:'Outfit',sans-serif; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 4px 20px rgba(14,165,233,.4); margin-top:4px; }
+  .btn-connect { width:100%; background:linear-gradient(135deg,#0ea5e9,#38bdf8); color:white; border:none; padding:14px; border-radius:12px; font-family:'Outfit',sans-serif; font-weight:800; font-size:1.1rem; cursor:pointer; box-shadow:0 4px 20px rgba(14,165,233,.4); margin-top:8px; letter-spacing:.3px; }
+  .btn-connect:active { opacity:.85; transform:scale(.98); }
 </style>
 </head>
 <body>
@@ -60,167 +60,205 @@
 
 <div class="overlay" id="overlay">
   <div class="overlay-box">
-    <h2>🎓 Elementary Display</h2>
-    <p>Connect to your Supabase database to start showing checkout announcements.</p>
-    <div class="o-field"><label>Supabase URL</label><input type="text" id="cfgUrl" placeholder="https://xxxx.supabase.co" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
-    <div class="o-field"><label>Supabase Anon Key</label><input type="text" id="cfgKey" placeholder="anon key" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
-    <button class="btn-connect" onclick="connect()" id="connectBtn">🚀 Connect</button>
+    <h2>&#127891; Elementary Display</h2>
+    <p>Enter your Supabase credentials to connect. Saved after first entry.</p>
+    <div class="o-field">
+      <label>Supabase URL</label>
+      <input type="text" id="cfgUrl" placeholder="https://xxxx.supabase.co" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="o-field">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="cfgKey" placeholder="sb_publishable_..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <button class="btn-connect" id="connectBtn">&#128640; Connect</button>
   </div>
 </div>
 
-<script>
-// Allow Enter key on inputs to trigger connect
-document.addEventListener('DOMContentLoaded', function() {
-  ['cfgUrl','cfgKey'].forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) el.addEventListener('keydown', function(e){ if(e.key==='Enter') connect(); });
-  });
-});
-</script>
-
 <div class="header">
-  <div><h1>🎓 <span>Elementary</span> Pickup</h1><p>Family Checkout Station</p></div>
-  <div><div id="clock">--:--</div><div id="dateline">—</div></div>
+  <div><h1>&#127891; <span>Elementary</span> Pickup</h1><p>Family Checkout Station</p></div>
+  <div><div id="clock">--:--</div><div id="dateline">--</div></div>
 </div>
 
 <div class="stage" id="stage">
-  <div class="idle"><span class="idle-icon">⭐</span><h2>Ready for Pickup</h2><p>Names appear here when checked out</p></div>
+  <div class="idle"><span class="idle-icon">&#11088;</span><h2>Ready for Pickup</h2><p>Names appear here when checked out</p></div>
 </div>
 
 <div class="queue-bar">
-  <div class="queue-label">⏱ Recent Checkouts</div>
+  <div class="queue-label">&#9200; Recent Checkouts</div>
   <div class="queue-chips" id="chips"><span class="none-yet">None yet today</span></div>
 </div>
 
-<button class="gear-btn" onclick="document.getElementById('overlay').style.display='flex'">⚙️</button>
+<button class="gear-btn" id="gearBtn">&#9881;&#65039;</button>
 
 <script>
-(function(){
-  const wrap=document.getElementById('stars');
-  for(let i=0;i<80;i++){
-    const s=document.createElement('div'); s.className='star';
-    const sz=1+Math.random()*2.5;
-    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*-5}s;`;
-    wrap.appendChild(s);
-  }
-})();
+// ── All JS in one block — no duplicate declarations ───────
 
-function tick(){
-  const n=new Date(),h=n.getHours()%12||12,m=String(n.getMinutes()).padStart(2,'0');
-  document.getElementById('clock').textContent=`${h}:${m} ${n.getHours()>=12?'PM':'AM'}`;
-  document.getElementById('dateline').textContent=n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-}
-tick(); setInterval(tick,1000);
+var CFG = { url: '', key: '' };
+var lastId = null, recentNames = [], activeTimer = null, pollTimer = null;
+var speechUnlocked = false;
 
-let CFG={url:'',key:''}, lastId=null, recentNames=[], activeTimer=null;
+// ── Connect button wired here — after DOM and function exist ──
+document.getElementById('connectBtn').addEventListener('click', connect);
+document.getElementById('gearBtn').addEventListener('click', function() {
+  document.getElementById('overlay').classList.remove('hidden');
+});
+document.getElementById('cfgUrl').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('cfgKey').focus();
+});
+document.getElementById('cfgKey').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') connect();
+});
 
-function connect(){
+function connect() {
   var urlVal = document.getElementById('cfgUrl').value.trim();
   var keyVal = document.getElementById('cfgKey').value.trim();
-  // Strip trailing slash
-  if(urlVal.slice(-1)==='/') urlVal = urlVal.slice(0,-1);
-  if(!urlVal || !keyVal){
-    alert('Please fill in both the Supabase URL and Anon Key.');
+  if (urlVal.slice(-1) === '/') urlVal = urlVal.slice(0, -1);
+  if (!urlVal || !keyVal) {
+    alert('Please fill in both fields.');
     return;
   }
   CFG.url = urlVal;
   CFG.key = keyVal;
-  try{ localStorage.setItem('kc_el_cfg', JSON.stringify(CFG)); }catch(e){}
-  document.getElementById('overlay').style.display='none';
+  try { localStorage.setItem('kc_el_cfg', JSON.stringify(CFG)); } catch(e) {}
+  document.getElementById('overlay').classList.add('hidden');
   startPolling();
 }
 
-function loadConfig(){
-  const s=localStorage.getItem('kc_el_cfg');
-  if(s){ CFG=JSON.parse(s); document.getElementById('cfgUrl').value=CFG.url; document.getElementById('cfgKey').value=CFG.key; if(CFG.url&&CFG.key){document.getElementById('overlay').style.display='none'; startPolling();} }
+function loadConfig() {
+  try {
+    var s = localStorage.getItem('kc_el_cfg');
+    if (s) {
+      CFG = JSON.parse(s);
+      document.getElementById('cfgUrl').value = CFG.url || '';
+      document.getElementById('cfgKey').value = CFG.key || '';
+      if (CFG.url && CFG.key) {
+        document.getElementById('overlay').classList.add('hidden');
+        startPolling();
+      }
+    }
+  } catch(e) {}
 }
 
-function startPolling(){ poll(); setInterval(poll,2000); }
+// ── Clock ─────────────────────────────────────────────────
+function tick() {
+  var n = new Date(), h = n.getHours() % 12 || 12, m = String(n.getMinutes()).padStart(2, '0');
+  document.getElementById('clock').textContent = h + ':' + m + ' ' + (n.getHours() >= 12 ? 'PM' : 'AM');
+  document.getElementById('dateline').textContent = n.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+}
+tick(); setInterval(tick, 1000);
 
-async function poll(){
-  if(!CFG.url||!CFG.key) return;
-  try{
-    const now=new Date().toISOString();
-    // Fetch recent unexpired records and filter by location_type in JS — avoids Supabase filter formatting issues
-    const r=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&order=id.desc&limit=20`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
-    if(!r.ok) return;
-    const all=await r.json();
-    const nowMs=Date.now();
-    const rows=all.filter(x=>{
-      if(!x.expires_at || new Date(x.expires_at).getTime() < nowMs) return false;
-      const l=(x.location_type||x.location||'').toLowerCase();
-      return l.includes('elementary')||l.includes('grade')||l.includes('kinder');
+// ── Polling ───────────────────────────────────────────────
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  poll();
+  pollTimer = setInterval(poll, 2000);
+}
+
+async function poll() {
+  if (!CFG.url || !CFG.key) return;
+  try {
+    var r = await fetch(CFG.url + '/rest/v1/checkouts?select=*&order=id.desc&limit=20', {
+      headers: { 'apikey': CFG.key, 'Authorization': 'Bearer ' + CFG.key }
     });
-    if(rows.length>0) handleRow(rows[0]);
-  }catch(e){ console.warn('poll error',e); }
+    if (!r.ok) return;
+    var all = await r.json();
+    var nowMs = Date.now();
+    var rows = all.filter(function(x) {
+      if (!x.expires_at || new Date(x.expires_at).getTime() < nowMs) return false;
+      var l = (x.location_type || x.location || '').toLowerCase();
+      return l.includes('elementary') || l.includes('grade') || l.includes('kinder');
+    });
+    if (rows.length > 0) handleRow(rows[0]);
+  } catch(e) { console.warn('poll error', e); }
 }
 
-function handleRow(row){
-  if(!row||!row.id) return;
-  if(String(row.id)===String(lastId)) return;
-  lastId=String(row.id);
-  showName(row.child_name,row.location);
-  speak(row.child_name,row.location);
+function handleRow(row) {
+  if (!row || !row.id) return;
+  if (String(row.id) === String(lastId)) return;
+  lastId = String(row.id);
+  showName(row.child_name, row.location);
+  speak(row.child_name);
   addChip(row.child_name);
 }
 
-function showName(name,location){
-  document.getElementById('stage').innerHTML=`
-    <div class="name-card">
-      <div class="card-badge">🎓 Now Checking Out</div>
-      <div class="big-name">${name}</div>
-      <div class="location-tag">📍 ${location}</div>
-      <div class="pickup-msg">Your family is ready for pickup!</div>
-      <div class="timer-track"><div class="timer-fill" id="tf"></div></div>
-    </div>`;
+// ── Display ───────────────────────────────────────────────
+function showName(name, location) {
+  document.getElementById('stage').innerHTML =
+    '<div class="name-card">' +
+    '<div class="card-badge">&#127891; Now Checking Out</div>' +
+    '<div class="big-name">' + name + '</div>' +
+    '<div class="location-tag">&#128205; ' + location + '</div>' +
+    '<div class="pickup-msg">Your family is ready for pickup!</div>' +
+    '<div class="timer-track"><div class="timer-fill" id="tf" style="width:100%"></div></div>' +
+    '</div>';
   clearInterval(activeTimer);
-  let s=60; const f=document.getElementById('tf'); if(f) f.style.width='100%';
-  activeTimer=setInterval(()=>{ s--; if(f) f.style.width=`${(s/60)*100}%`; if(s<=0){clearInterval(activeTimer);resetIdle();} },1000);
+  var s = 60;
+  activeTimer = setInterval(function() {
+    s--;
+    var f = document.getElementById('tf');
+    if (f) f.style.width = ((s / 60) * 100) + '%';
+    if (s <= 0) { clearInterval(activeTimer); resetIdle(); }
+  }, 1000);
 }
 
-function resetIdle(){
-  document.getElementById('stage').innerHTML=`<div class="idle"><span class="idle-icon">⭐</span><h2>Ready for Pickup</h2><p>Names appear here when checked out</p></div>`;
+function resetIdle() {
+  document.getElementById('stage').innerHTML =
+    '<div class="idle"><span class="idle-icon">&#11088;</span><h2>Ready for Pickup</h2><p>Names appear here when checked out</p></div>';
 }
 
-function addChip(name){
-  recentNames.unshift(name); if(recentNames.length>7) recentNames.pop();
-  document.getElementById('chips').innerHTML=recentNames.map((n,i)=>`<div class="chip">${i===0?'✅':'⏱'} ${n}</div>`).join('');
+function addChip(name) {
+  recentNames.unshift(name);
+  if (recentNames.length > 7) recentNames.pop();
+  document.getElementById('chips').innerHTML = recentNames.map(function(n, i) {
+    return '<div class="chip">' + (i === 0 ? '&#9989;' : '&#9200;') + ' ' + n + '</div>';
+  }).join('');
 }
 
-function speak(name,location){
-  if(!window.speechSynthesis) return;
+// ── Speech ────────────────────────────────────────────────
+function speak(name) {
+  if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const msg = `${name}, your adult is here.`;
-  const u = new SpeechSynthesisUtterance(msg);
+  var msg = name + ', your adult is here.';
+  var u = new SpeechSynthesisUtterance(msg);
   u.rate = 0.88; u.pitch = 1.0; u.volume = 1;
-  const v = window.speechSynthesis.getVoices().find(v => /Samantha|Karen|Victoria|Google US English/i.test(v.name));
+  var v = window.speechSynthesis.getVoices().filter(function(x) {
+    return /Samantha|Karen|Victoria|Google US English/i.test(x.name);
+  })[0];
   if (v) u.voice = v;
-  window.speechSynthesis.speak(u);}
-// Unlock speech on first user tap (required by Fire Tablet / mobile browsers)
-let speechUnlocked = false;
+  window.speechSynthesis.speak(u);
+}
+
 function unlockSpeech() {
-  if (speechUnlocked) return;
+  if (speechUnlocked || !window.speechSynthesis) return;
   speechUnlocked = true;
-  const u = new SpeechSynthesisUtterance('');
+  var u = new SpeechSynthesisUtterance('');
   u.volume = 0;
   window.speechSynthesis.speak(u);
 }
-document.addEventListener('click', unlockSpeech, {once: false});
-document.addEventListener('touchstart', unlockSpeech, {once: false});
-window.speechSynthesis?.getVoices?.();
-window.speechSynthesis?.addEventListener?.('voiceschanged',()=>window.speechSynthesis.getVoices());
-
-// iOS Safari: unlock speech on first user tap so delayed announcements work
-var speechUnlocked=false;
-function unlockSpeech(){
-  if(speechUnlocked||!window.speechSynthesis) return;
-  speechUnlocked=true;
-  var u=new SpeechSynthesisUtterance(''); u.volume=0;
-  window.speechSynthesis.speak(u);
+document.addEventListener('click', unlockSpeech);
+document.addEventListener('touchstart', unlockSpeech);
+if (window.speechSynthesis) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.addEventListener('voiceschanged', function() {
+    window.speechSynthesis.getVoices();
+  });
 }
-document.addEventListener('touchstart',unlockSpeech,{once:true});
-document.addEventListener('click',unlockSpeech,{once:true});
-if('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
+
+// ── Stars ─────────────────────────────────────────────────
+(function() {
+  var wrap = document.getElementById('stars');
+  for (var i = 0; i < 80; i++) {
+    var s = document.createElement('div'); s.className = 'star';
+    var sz = 1 + Math.random() * 2.5;
+    s.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;top:' + (Math.random()*100) + '%;left:' + (Math.random()*100) + '%;animation-duration:' + (2+Math.random()*4) + 's;animation-delay:' + (Math.random()*-5) + 's;';
+    wrap.appendChild(s);
+  }
+})();
+
+// ── Wake lock ─────────────────────────────────────────────
+if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(function() {});
+
+// ── Init ──────────────────────────────────────────────────
 loadConfig();
 </script>
 </body>
