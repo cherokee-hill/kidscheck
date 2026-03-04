@@ -173,7 +173,7 @@ function addChip(name){
 function speak(name,location){
   if(!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const msg = `Attention ${name}, your adult is here for pickup. ${name}, grab your things and head to the double doors.`;
+  const msg = `${name}, your adult is here.`;
   const u = new SpeechSynthesisUtterance(msg);
   u.rate = 0.88; u.pitch = 1.0; u.volume = 1;
   const v = window.speechSynthesis.getVoices().find(v => /Samantha|Karen|Victoria|Google US English/i.test(v.name));
