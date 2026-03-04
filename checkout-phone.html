@@ -418,7 +418,7 @@ async function lookupPCO(code) {
   const auth = btoa(`${CFG.pcoId}:${CFG.pcoSecret}`);
   try {
     const r = await fetch(
-      `https://kidscheck-proxy.cherokee-58e.workers.dev/proxy/check-ins/v2/check_ins?where[security_code]=${encodeURIComponent(code)}&include=person,locations&per_page=50&filter=checked_in`,
+      `https://kidscheck-proxy.cherokee-58e.workers.dev/proxy/check-ins/v2/check_ins?where[security_code]=${encodeURIComponent(code)}&include=person,locations,household&per_page=50&filter=checked_in`,
       { headers: { 'Authorization': `Basic ${auth}` } }
     );
     if (!r.ok) {
@@ -472,29 +472,50 @@ function renderKids(data, code) {
     const first  = p?.attributes?.first_name || ci.attributes?.first_name || 'Unknown';
     const last   = p?.attributes?.last_name  || ci.attributes?.last_name  || '';
     const loc    = locObj?.attributes?.name || ci.attributes?.location_name || '';
+    // Each check-in has its own security_code — use that to match the scanned badge exactly
+    const ciCode = ci.attributes?.security_code || ci.attributes?.code || '';
     return {
       id: ci.id,
       name: `${first} ${last}`.trim(),
+      lastName: last,
       location: loc,
       lt: locType(loc),
       out: !!ci.attributes?.checked_out_at,
-      kind: ci.attributes?.kind || ''
+      kind: ci.attributes?.kind || '',
+      secCode: ciCode
     };
   });
 
   // Filter out volunteers and non-kids-room check-ins
-  const kids = allCheckins.filter(c => {
+  const kidsOnly = allCheckins.filter(c => {
     if (c.kind && c.kind.toLowerCase().includes('volunteer')) return false;
-    if (!c.location) return true; // show if location unknown — better safe than hiding a real kid
+    if (!c.location) return true;
     return isKidsRoom(c.location);
   });
 
-  if (kids.length === 0) {
+  if (kidsOnly.length === 0) {
     setResults(`<div class="empty"><div class="ei">🔍</div><p>No kids found for this badge</p><small>Badge code: ${code}</small></div>`);
     return;
   }
 
-  const famName = kids[0]?.name.split(' ').slice(-1)[0] || 'Family';
+  // Try to match by security_code on each check-in record first
+  // PCO returns the individual check-in's code which should match the scanned badge
+  const exactMatch = kidsOnly.filter(c => c.secCode && c.secCode === code);
+  
+  // If exact code match found, use those — otherwise fall back to all kids
+  // then group by last name to find the primary family
+  let kids;
+  if (exactMatch.length > 0) {
+    kids = exactMatch;
+  } else {
+    // Group by last name, pick the group whose last name appears first in the list
+    // (first check-in returned is most likely the scanned family)
+    const firstLastName = kidsOnly[0]?.lastName || '';
+    const sameLastName = kidsOnly.filter(c => c.lastName === firstLastName);
+    kids = sameLastName.length > 0 ? sameLastName : kidsOnly;
+  }
+
+  const famName = kids[0]?.lastName || kids[0]?.name.split(' ').slice(-1)[0] || 'Family';
 
   let html = `<div class="fam-banner">👨‍👩‍👧‍👦 ${famName} Family — ${kids.length} kid${kids.length!==1?'s':''}</div><div class="kid-list">`;
 
