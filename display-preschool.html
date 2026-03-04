@@ -132,11 +132,11 @@ async function poll(){
   try{
     const now=new Date().toISOString();
     let rows=[];
-    const r=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&loc_type=eq.preschool&expires_at=gte.${encodeURIComponent(now)}&order=id.desc&limit=1`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
+    const r=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&location_type=eq.preschool&expires_at=gte.${encodeURIComponent(now)}&order=id.desc&limit=1`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
     if(r.ok){ rows=await r.json(); }
     else {
       const r2=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&expires_at=gte.${encodeURIComponent(now)}&order=id.desc&limit=10`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
-      if(r2.ok){ const all=await r2.json(); rows=all.filter(x=>{const l=(x.loc_type||x.location||'').toLowerCase(); return l.includes('preschool')||l.includes('pre-k')||l.includes('prek');}); }
+      if(r2.ok){ const all=await r2.json(); rows=all.filter(x=>{const l=(x.location_type||x.location||'').toLowerCase(); return l.includes('preschool')||l.includes('pre-k')||l.includes('prek');}); }
     }
     if(rows.length>0) handleRow(rows[0]);
   }catch(e){}
