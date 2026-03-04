@@ -19,19 +19,19 @@
   .header p { color:rgba(255,255,255,.5); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; margin-top:3px; }
   #clock { font-family:'Outfit',sans-serif; font-size:2.6rem; font-weight:900; color:white; text-align:right; letter-spacing:-1px; }
   #dateline { font-size:.78rem; font-weight:600; color:rgba(255,255,255,.45); text-align:right; margin-top:2px; }
-  .stage { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; position:relative; z-index:5; }
+  .stage { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 24px; position:relative; z-index:5; overflow:auto; }
   .idle { text-align:center; }
   .idle-icon { font-size:5rem; display:block; margin-bottom:20px; animation:pulse 3s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.08);opacity:.9} }
   .idle h2 { font-family:'Outfit',sans-serif; font-size:2.6rem; font-weight:900; color:rgba(255,255,255,.2); letter-spacing:-1px; }
   .idle p { font-size:1rem; font-weight:600; color:rgba(255,255,255,.15); margin-top:8px; }
-  .name-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:28px; padding:56px 80px; text-align:center; max-width:800px; width:100%; position:relative; overflow:hidden; backdrop-filter:blur(20px); animation:cardIn .5s cubic-bezier(.34,1.56,.64,1) forwards; box-shadow:0 0 80px rgba(56,189,248,.12),0 32px 80px rgba(0,0,0,.4); }
+  .name-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:28px; padding:36px 56px; text-align:center; max-width:800px; width:100%; position:relative; overflow:hidden; backdrop-filter:blur(20px); animation:cardIn .5s cubic-bezier(.34,1.56,.64,1) forwards; box-shadow:0 0 80px rgba(56,189,248,.12),0 32px 80px rgba(0,0,0,.4); }
   @keyframes cardIn { from{opacity:0;transform:scale(.8) translateY(40px)} to{opacity:1;transform:scale(1) translateY(0)} }
   .name-card::before { content:''; position:absolute; inset:-2px; border-radius:30px; background:conic-gradient(from 0deg,#38bdf8,#818cf8,#34d399,#fb7185,#38bdf8); z-index:-1; animation:rotateBorder 4s linear infinite; }
   .name-card::after { content:''; position:absolute; inset:2px; background:#0f172a; border-radius:26px; z-index:-1; }
   @keyframes rotateBorder { to{transform:rotate(360deg)} }
   .card-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(56,189,248,.15); border:1px solid rgba(56,189,248,.3); color:#38bdf8; padding:5px 16px; border-radius:20px; font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; }
-  .big-name { font-family:'Outfit',sans-serif; font-size:6rem; font-weight:900; color:white; line-height:1; letter-spacing:-3px; margin-bottom:20px; animation:nameIn .5s cubic-bezier(.34,1.56,.64,1) .15s both; }
+  .big-name { font-family:'Outfit',sans-serif; font-size:clamp(1.4rem,4vw,3.8rem); font-weight:900; color:white; line-height:1.2; letter-spacing:-1px; margin-bottom:16px; animation:nameIn .5s cubic-bezier(.34,1.56,.64,1) .15s both; word-break:break-word; }
   @keyframes nameIn { from{opacity:0;transform:translateY(24px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
   .location-tag { display:inline-flex; align-items:center; gap:8px; background:rgba(52,211,153,.12); border:1.5px solid rgba(52,211,153,.3); color:#34d399; padding:9px 28px; border-radius:40px; font-size:1.1rem; font-weight:700; margin-bottom:22px; }
   .pickup-msg { font-size:1rem; color:rgba(255,255,255,.4); font-weight:600; margin-bottom:28px; }
@@ -124,15 +124,18 @@ async function poll(){
   if(!CFG.url||!CFG.key) return;
   try{
     const now=new Date().toISOString();
-    let rows=[];
-    const r=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&location_type=eq.elementary&expires_at=gte.${encodeURIComponent(now)}&order=id.desc&limit=1`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
-    if(r.ok){ rows=await r.json(); }
-    else {
-      const r2=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&expires_at=gte.${encodeURIComponent(now)}&order=id.desc&limit=10`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
-      if(r2.ok){ const all=await r2.json(); rows=all.filter(x=>{const l=(x.location_type||x.location||'').toLowerCase(); return l.includes('elementary')||l.includes('grade')||l.includes('kinder');}); }
-    }
+    // Fetch recent unexpired records and filter by location_type in JS — avoids Supabase filter formatting issues
+    const r=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&order=id.desc&limit=20`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
+    if(!r.ok) return;
+    const all=await r.json();
+    const nowMs=Date.now();
+    const rows=all.filter(x=>{
+      if(!x.expires_at || new Date(x.expires_at).getTime() < nowMs) return false;
+      const l=(x.location_type||x.location||'').toLowerCase();
+      return l.includes('elementary')||l.includes('grade')||l.includes('kinder');
+    });
     if(rows.length>0) handleRow(rows[0]);
-  }catch(e){}
+  }catch(e){ console.warn('poll error',e); }
 }
 
 function handleRow(row){
@@ -176,6 +179,17 @@ function speak(name,location){
   const v = window.speechSynthesis.getVoices().find(v => /Samantha|Karen|Victoria|Google US English/i.test(v.name));
   if (v) u.voice = v;
   window.speechSynthesis.speak(u);}
+// Unlock speech on first user tap (required by Fire Tablet / mobile browsers)
+let speechUnlocked = false;
+function unlockSpeech() {
+  if (speechUnlocked) return;
+  speechUnlocked = true;
+  const u = new SpeechSynthesisUtterance('');
+  u.volume = 0;
+  window.speechSynthesis.speak(u);
+}
+document.addEventListener('click', unlockSpeech, {once: false});
+document.addEventListener('touchstart', unlockSpeech, {once: false});
 window.speechSynthesis?.getVoices?.();
 window.speechSynthesis?.addEventListener?.('voiceschanged',()=>window.speechSynthesis.getVoices());
 if('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
