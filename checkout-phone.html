@@ -393,13 +393,38 @@ function renderKids(data, code) {
   html += '</div>';
 
   // Room checkout buttons
-  html += '<div class="room-btns">';
+  // Check Out All button (excludes nursery)
+  var checkoutableKids = kids.filter(function(k){ return k.lt !== 'nursery' && !k.out; });
+  if (checkoutableKids.length > 0) {
+    var allIds   = checkoutableKids.map(function(k){ return k.id; }).join(',');
+    var allNames = encodeURIComponent(checkoutableKids.map(function(k){ return k.name; }).join(','));
+    // Build per-room map for all kids
+    var allRoomMap = {};
+    checkoutableKids.forEach(function(k){
+      var key = k.lt+'|'+k.location;
+      if(!allRoomMap[key]) allRoomMap[key]={lt:k.lt,location:k.location,ids:[],names:[]};
+      allRoomMap[key].ids.push(k.id);
+      allRoomMap[key].names.push(k.name);
+    });
+    var allRoomJson = encodeURIComponent(JSON.stringify(Object.values(allRoomMap)));
+    var allLabel = checkoutableKids.length === 1
+      ? 'Check Out ' + checkoutableKids[0].name
+      : 'Check Out All ' + checkoutableKids.length + ' Kids';
+    html += '<div class="room-btns">';
+    html += '<div class="room-btn-wrap" style="background:#f0fdf4;border-bottom:2px solid #bbf7d0;">';
+    html += '<div class="room-btn-label" style="color:#16a34a;">&#10003; Check Out Everyone</div>';
+    html += '<button class="btn-room go-room" id="rbtn-all" style="background:#16a34a;" onclick="checkoutAll(\'' + allRoomJson + '\')">' + allLabel + '</button>';
+    html += '</div>';
+  } else {
+    html += '<div class="room-btns">';
+  }
+
   Object.values(roomGroups).forEach(function(group) {
     var allOut     = group.kids.every(function(k) { return k.out; });
     var isNursery  = group.lt === 'nursery';
     var firstNames = group.kids.map(function(k) { return k.firstName; }).join(', ');
     var ids        = group.kids.map(function(k) { return k.id; }).join(',');
-    var namesCsv   = encodeURIComponent(group.kids.map(function(k) { return k.firstName; }).join(','));
+    var namesCsv   = encodeURIComponent(group.kids.map(function(k) { return k.name; }).join(','));
     var safeLoc    = encodeURIComponent(group.location);
     var icon       = group.lt === 'preschool' ? '&#127775;' : group.lt === 'nursery' ? '&#127868;' : '&#128640;';
 
@@ -488,6 +513,63 @@ async function fireAnnouncement(names, location, lt) {
       })
     });
   } catch(e) { console.warn('Supabase:', e); }
+}
+
+// ── Checkout ALL rooms at once ───────────────────────────
+async function checkoutAll(roomJsonEncoded) {
+  var rooms = JSON.parse(decodeURIComponent(roomJsonEncoded));
+
+  // Disable the all button
+  var allBtn = document.getElementById('rbtn-all');
+  if (allBtn) { allBtn.disabled = true; allBtn.innerHTML = '<span class="spin" style="width:14px;height:14px;border-width:2px"></span> Checking out...'; }
+
+  // Also disable individual room buttons
+  rooms.forEach(function(room) {
+    var rbtn = document.getElementById('rbtn-' + room.ids.join(','));
+    if (rbtn) { rbtn.disabled = true; }
+  });
+
+  // PATCH all kids in Planning Center
+  if (CFG.pcoId && CFG.pcoSecret) {
+    var auth = btoa(CFG.pcoId + ':' + CFG.pcoSecret);
+    var allIds = rooms.reduce(function(acc, r) { return acc.concat(r.ids); }, []);
+    await Promise.all(allIds.map(function(id) {
+      return fetch(PROXY + '/check-ins/v2/check_ins/' + id, {
+        method: 'PATCH',
+        headers: { 'Authorization': 'Basic ' + auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { type: 'CheckIn', id: id, attributes: { checked_out_at: new Date().toISOString() } } })
+      }).catch(function(e) { console.warn('PCO patch:', e); });
+    }));
+  }
+
+  // Fade all kid rows
+  rooms.forEach(function(room) {
+    room.ids.forEach(function(id) {
+      doneSet.add(id);
+      var row = document.getElementById('row-' + id);
+      if (row) row.style.opacity = '0.4';
+    });
+  });
+
+  // Update all buttons to done
+  if (allBtn) { allBtn.className = 'btn-room done-room'; allBtn.innerHTML = '&#10003; All Checked Out'; allBtn.disabled = true; }
+  rooms.forEach(function(room) {
+    var rbtn = document.getElementById('rbtn-' + room.ids.join(','));
+    if (rbtn) { rbtn.className = 'btn-room done-room'; rbtn.innerHTML = '&#10003; Checked Out'; rbtn.disabled = true; }
+  });
+
+  // Queue one announcement per room, each with 5s delay
+  rooms.forEach(function(room) {
+    var roomKey = room.lt + '|' + room.location;
+    if (pendingAnnouncements[roomKey]) clearTimeout(pendingAnnouncements[roomKey]);
+    pendingAnnouncements[roomKey] = setTimeout(function() {
+      fireAnnouncement(room.names, room.location, room.lt);
+      delete pendingAnnouncements[roomKey];
+    }, 5000);
+  });
+
+  var allNames = rooms.reduce(function(acc, r) { return acc.concat(r.names); }, []);
+  showToast('Announcing ' + buildNameList(allNames) + ' in 5s...', 'ok');
 }
 
 // ── Toast ─────────────────────────────────────────────────
