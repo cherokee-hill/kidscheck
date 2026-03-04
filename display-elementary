@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KidsCheck · Elementary</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: 'DM Sans', sans-serif; background: #0f172a; height: 100vh; display: flex; flex-direction: column; color: white; }
+  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .star { position: absolute; background: white; border-radius: 50%; animation: twinkle linear infinite; }
+  @keyframes twinkle { 0%,100%{opacity:.1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.4)} }
+  body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse at 20% 50%,rgba(37,99,235,.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 30%,rgba(16,185,129,.10) 0%,transparent 50%); pointer-events:none; z-index:0; }
+  .header { background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.08); padding:18px 32px; display:flex; align-items:center; justify-content:space-between; position:relative; z-index:10; flex-shrink:0; backdrop-filter:blur(10px); }
+  .header h1 { font-family:'Outfit',sans-serif; font-size:2rem; font-weight:900; color:white; letter-spacing:-.5px; }
+  .header h1 span { color:#38bdf8; }
+  .header p { color:rgba(255,255,255,.5); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; margin-top:3px; }
+  #clock { font-family:'Outfit',sans-serif; font-size:2.6rem; font-weight:900; color:white; text-align:right; letter-spacing:-1px; }
+  #dateline { font-size:.78rem; font-weight:600; color:rgba(255,255,255,.45); text-align:right; margin-top:2px; }
+  .stage { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; position:relative; z-index:5; }
+  .idle { text-align:center; }
+  .idle-icon { font-size:5rem; display:block; margin-bottom:20px; animation:pulse 3s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.08);opacity:.9} }
+  .idle h2 { font-family:'Outfit',sans-serif; font-size:2.6rem; font-weight:900; color:rgba(255,255,255,.2); letter-spacing:-1px; }
+  .idle p { font-size:1rem; font-weight:600; color:rgba(255,255,255,.15); margin-top:8px; }
+  .name-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:28px; padding:56px 80px; text-align:center; max-width:800px; width:100%; position:relative; overflow:hidden; backdrop-filter:blur(20px); animation:cardIn .5s cubic-bezier(.34,1.56,.64,1) forwards; box-shadow:0 0 80px rgba(56,189,248,.12),0 32px 80px rgba(0,0,0,.4); }
+  @keyframes cardIn { from{opacity:0;transform:scale(.8) translateY(40px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  .name-card::before { content:''; position:absolute; inset:-2px; border-radius:30px; background:conic-gradient(from 0deg,#38bdf8,#818cf8,#34d399,#fb7185,#38bdf8); z-index:-1; animation:rotateBorder 4s linear infinite; }
+  .name-card::after { content:''; position:absolute; inset:2px; background:#0f172a; border-radius:26px; z-index:-1; }
+  @keyframes rotateBorder { to{transform:rotate(360deg)} }
+  .card-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(56,189,248,.15); border:1px solid rgba(56,189,248,.3); color:#38bdf8; padding:5px 16px; border-radius:20px; font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; }
+  .big-name { font-family:'Outfit',sans-serif; font-size:6rem; font-weight:900; color:white; line-height:1; letter-spacing:-3px; margin-bottom:20px; animation:nameIn .5s cubic-bezier(.34,1.56,.64,1) .15s both; }
+  @keyframes nameIn { from{opacity:0;transform:translateY(24px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+  .location-tag { display:inline-flex; align-items:center; gap:8px; background:rgba(52,211,153,.12); border:1.5px solid rgba(52,211,153,.3); color:#34d399; padding:9px 28px; border-radius:40px; font-size:1.1rem; font-weight:700; margin-bottom:22px; }
+  .pickup-msg { font-size:1rem; color:rgba(255,255,255,.4); font-weight:600; margin-bottom:28px; }
+  .timer-track { background:rgba(255,255,255,.08); border-radius:40px; height:8px; overflow:hidden; width:100%; max-width:440px; margin:0 auto; }
+  .timer-fill { height:100%; border-radius:40px; background:linear-gradient(90deg,#38bdf8,#34d399); transition:width 1s linear; }
+  .queue-bar { background:rgba(255,255,255,.03); border-top:1px solid rgba(255,255,255,.07); padding:16px 32px; position:relative; z-index:10; flex-shrink:0; }
+  .queue-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:rgba(255,255,255,.25); margin-bottom:9px; }
+  .queue-chips { display:flex; gap:8px; flex-wrap:wrap; }
+  .chip { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:4px 14px; font-weight:700; font-size:.82rem; color:rgba(255,255,255,.55); animation:chipIn .3s ease; }
+  @keyframes chipIn { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+  .none-yet { font-size:.82rem; color:rgba(255,255,255,.15); font-weight:600; }
+  .gear-btn { position:fixed; bottom:70px; right:14px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-radius:50%; width:36px; height:36px; font-size:1rem; cursor:pointer; z-index:50; color:rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; }
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:100; backdrop-filter:blur(8px); }
+  .overlay-box { background:#1e293b; border:1px solid rgba(255,255,255,.1); border-radius:22px; padding:36px; max-width:440px; width:90%; box-shadow:0 32px 80px rgba(0,0,0,.6); }
+  .overlay-box h2 { font-family:'Outfit',sans-serif; font-size:1.6rem; font-weight:900; color:#38bdf8; margin-bottom:4px; }
+  .overlay-box p { font-size:.85rem; color:rgba(255,255,255,.5); margin-bottom:22px; }
+  .o-field { margin-bottom:13px; }
+  .o-field label { display:block; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:rgba(255,255,255,.4); margin-bottom:4px; }
+  .o-field input { width:100%; padding:10px 13px; border:1.5px solid rgba(255,255,255,.12); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.9rem; background:rgba(255,255,255,.07); color:white; }
+  .o-field input:focus { outline:none; border-color:#38bdf8; }
+  .btn-connect { width:100%; background:linear-gradient(135deg,#0ea5e9,#38bdf8); color:white; border:none; padding:13px; border-radius:12px; font-family:'Outfit',sans-serif; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 4px 20px rgba(14,165,233,.4); margin-top:4px; }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <h2>🎓 Elementary Display</h2>
+    <p>Connect to your Supabase database to start showing checkout announcements.</p>
+    <div class="o-field"><label>Supabase URL</label><input type="text" id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
+    <div class="o-field"><label>Supabase Anon Key</label><input type="password" id="cfgKey" placeholder="anon key"></div>
+    <button class="btn-connect" onclick="connect()">🚀 Connect</button>
+  </div>
+</div>
+
+<div class="header">
+  <div><h1>🎓 <span>Elementary</span> Pickup</h1><p>Family Checkout Station</p></div>
+  <div><div id="clock">--:--</div><div id="dateline">—</div></div>
+</div>
+
+<div class="stage" id="stage">
+  <div class="idle"><span class="idle-icon">⭐</span><h2>Ready for Pickup</h2><p>Names appear here when checked out</p></div>
+</div>
+
+<div class="queue-bar">
+  <div class="queue-label">⏱ Recent Checkouts</div>
+  <div class="queue-chips" id="chips"><span class="none-yet">None yet today</span></div>
+</div>
+
+<button class="gear-btn" onclick="document.getElementById('overlay').style.display='flex'">⚙️</button>
+
+<script>
+(function(){
+  const wrap=document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=1+Math.random()*2.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*-5}s;`;
+    wrap.appendChild(s);
+  }
+})();
+
+function tick(){
+  const n=new Date(),h=n.getHours()%12||12,m=String(n.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent=`${h}:${m} ${n.getHours()>=12?'PM':'AM'}`;
+  document.getElementById('dateline').textContent=n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+}
+tick(); setInterval(tick,1000);
+
+let CFG={url:'',key:''}, lastId=null, recentNames=[], activeTimer=null;
+
+function connect(){
+  CFG.url=document.getElementById('cfgUrl').value.trim().replace(/\/$/,'');
+  CFG.key=document.getElementById('cfgKey').value.trim();
+  if(!CFG.url||!CFG.key) return;
+  localStorage.setItem('kc_el_cfg',JSON.stringify(CFG));
+  document.getElementById('overlay').style.display='none';
+  startPolling();
+}
+
+function loadConfig(){
+  const s=localStorage.getItem('kc_el_cfg');
+  if(s){ CFG=JSON.parse(s); document.getElementById('cfgUrl').value=CFG.url; document.getElementById('cfgKey').value=CFG.key; if(CFG.url&&CFG.key){document.getElementById('overlay').style.display='none'; startPolling();} }
+}
+
+function startPolling(){ poll(); setInterval(poll,2000); }
+
+async function poll(){
+  if(!CFG.url||!CFG.key) return;
+  try{
+    const now=new Date().toISOString();
+    let rows=[];
+    const r=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&loc_type=eq.elementary&expires_at=gte.${encodeURIComponent(now)}&order=id.desc&limit=1`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
+    if(r.ok){ rows=await r.json(); }
+    else {
+      const r2=await fetch(`${CFG.url}/rest/v1/checkouts?select=*&expires_at=gte.${encodeURIComponent(now)}&order=id.desc&limit=10`,{headers:{'apikey':CFG.key,'Authorization':`Bearer ${CFG.key}`}});
+      if(r2.ok){ const all=await r2.json(); rows=all.filter(x=>{const l=(x.loc_type||x.location||'').toLowerCase(); return l.includes('elementary')||l.includes('grade')||l.includes('kinder');}); }
+    }
+    if(rows.length>0) handleRow(rows[0]);
+  }catch(e){}
+}
+
+function handleRow(row){
+  if(!row||!row.id) return;
+  if(String(row.id)===String(lastId)) return;
+  lastId=String(row.id);
+  showName(row.child_name,row.location);
+  speak(row.child_name,row.location);
+  addChip(row.child_name);
+}
+
+function showName(name,location){
+  document.getElementById('stage').innerHTML=`
+    <div class="name-card">
+      <div class="card-badge">🎓 Now Checking Out</div>
+      <div class="big-name">${name}</div>
+      <div class="location-tag">📍 ${location}</div>
+      <div class="pickup-msg">Your family is ready for pickup!</div>
+      <div class="timer-track"><div class="timer-fill" id="tf"></div></div>
+    </div>`;
+  clearInterval(activeTimer);
+  let s=60; const f=document.getElementById('tf'); if(f) f.style.width='100%';
+  activeTimer=setInterval(()=>{ s--; if(f) f.style.width=`${(s/60)*100}%`; if(s<=0){clearInterval(activeTimer);resetIdle();} },1000);
+}
+
+function resetIdle(){
+  document.getElementById('stage').innerHTML=`<div class="idle"><span class="idle-icon">⭐</span><h2>Ready for Pickup</h2><p>Names appear here when checked out</p></div>`;
+}
+
+function addChip(name){
+  recentNames.unshift(name); if(recentNames.length>7) recentNames.pop();
+  document.getElementById('chips').innerHTML=recentNames.map((n,i)=>`<div class="chip">${i===0?'✅':'⏱'} ${n}</div>`).join('');
+}
+
+function speak(name,location){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const msg = `Attention ${name}, your adult is here for pickup. ${name}, grab your things and head to the double doors.`;
+  const u = new SpeechSynthesisUtterance(msg);
+  u.rate = 0.88; u.pitch = 1.0; u.volume = 1;
+  const v = window.speechSynthesis.getVoices().find(v => /Samantha|Karen|Victoria|Google US English/i.test(v.name));
+  if (v) u.voice = v;
+  window.speechSynthesis.speak(u);}
+window.speechSynthesis?.getVoices?.();
+window.speechSynthesis?.addEventListener?.('voiceschanged',()=>window.speechSynthesis.getVoices());
+if('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
+loadConfig();
+</script>
+</body>
+</html>
