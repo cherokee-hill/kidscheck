@@ -418,7 +418,7 @@ async function lookupPCO(code) {
   const auth = btoa(`${CFG.pcoId}:${CFG.pcoSecret}`);
   try {
     const r = await fetch(
-      `https://api.planningcenteronline.com/check-ins/v2/check_ins?where[security_code]=${encodeURIComponent(code)}&include=person,event_period&per_page=25&filter=checked_in`,
+      `https://kidscheck-proxy.cherokee-58e.workers.dev/proxy/check-ins/v2/check_ins?where[security_code]=${encodeURIComponent(code)}&include=person,event_period&per_page=25&filter=checked_in`,
       { headers: { 'Authorization': `Basic ${auth}` } }
     );
     if (!r.ok) {
@@ -511,7 +511,7 @@ async function checkout(id, name, location, lt) {
   if (CFG.pcoId && CFG.pcoSecret) {
     try {
       const auth = btoa(`${CFG.pcoId}:${CFG.pcoSecret}`);
-      await fetch(`https://api.planningcenteronline.com/check-ins/v2/check_ins/${id}`, {
+      await fetch(`https://kidscheck-proxy.cherokee-58e.workers.dev/proxy/check-ins/v2/check_ins/${id}`, {
         method: 'PATCH',
         headers: { 'Authorization':`Basic ${auth}`, 'Content-Type':'application/json' },
         body: JSON.stringify({ data:{ type:'CheckIn', id, attributes:{ checked_out_at: new Date().toISOString() } } })
